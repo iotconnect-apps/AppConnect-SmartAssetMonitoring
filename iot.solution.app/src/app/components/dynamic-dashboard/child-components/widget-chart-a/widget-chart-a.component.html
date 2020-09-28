@@ -1,0 +1,34 @@
+<div class="drag-body dashboard-widget">
+	<div class="panel-heading" [ngStyle]="{'background':widget?.widgetProperty?.background}">
+		<h5 class="panel-title" matTooltip="{{widget?.widgetProperty?.title}}" matTooltipPosition="right" [ngStyle]="{'font-size':widget?.widgetProperty?.fontSize+'px', 'font-family':widget?.widgetProperty?.fontFamily, 'color':widget?.widgetProperty?.fontColor}"> {{widget?.widgetProperty?.title}} </h5>
+		<div class="ml-auto">
+			<form>
+				<mat-form-field class="mb-0 m-r-40">
+					<mat-select placeholder="Select" (selectionChange)="changeFilterAsset($event)" [(value)]="selected">
+						<mat-option *ngFor="let item of filterType" [value]="item?.value">
+							{{item.name}}
+						</mat-option>
+					</mat-select>
+				</mat-form-field>
+			</form>
+		</div>
+	</div>
+	<mat-card class="dashboard-card mat-card">
+		<div class="chart-data d-flex align-items-center justify-content-center h-100">
+			<div [ngStyle]="{height:chartHeight+'px'}" class="w-100">
+				<circle-progress [percent]="assetUtilization"
+				[responsive]="true"
+				[radius]="(chartHeight - 200)"
+				[outerStrokeWidth]="10"
+				[innerStrokeWidth]="0"
+				[outerStrokeColor]="colors[0]"
+				[animation]="true"
+				[animationDuration]="300"
+				[showTitle]="true"
+				[showSubtitle]="false"
+				[titleFontSize]="30"
+				[unitsFontSize]="30"></circle-progress>
+			</div>
+		</div>
+	</mat-card>
+</div>

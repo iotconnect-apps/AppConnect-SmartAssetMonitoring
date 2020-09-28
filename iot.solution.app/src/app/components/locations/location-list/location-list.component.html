@@ -1,0 +1,102 @@
+<section class="content-header">
+  <h1>Location Listing</h1>
+  <div class="content-header-action align-items-center">
+    <form>
+      <div class="instance-status-details m-r-20">
+        <div class="instance-status-box d-flex flex-wrap align-items-center">
+          <div class="col">
+            <div class="instance-status-info">
+              <span class="user-status-type status-green">Active</span>
+            </div>
+          </div>
+          <div class="col">
+            <div class="instance-status-info">
+              <span class="user-status-type status-red">Inactive</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <!-- <ul class="legend-list mb-0 m-r-10">
+      <li><span class="status-available"></span>Connected</li>
+      <li><span class="status-unavailable"></span>Disconnected</li>
+    </ul> -->
+    <div>
+      <app-search-render title="Search Location" [searchValue]="searchParameters.searchText" (searchEvent)="searchTextCallback($event)">
+      </app-search-render>
+    </div>
+    <div class="p-l-10">
+      <button mat-flat-button color="primary" title="Add Location" [routerLink]="['/locations/add']">Add Location</button>
+    </div>
+  </div>
+</section>
+<div class="content">
+  <div class="user-grid-wrapper custom-height-grid-box">
+    <div class="row">
+      <div class="col-lg-4 col-ld-3" *ngFor="let location of locationList;let k = index;">
+
+        <div class="user-grid-box" style="padding-top:0%">
+
+          <a title="Change Status" href="javascript:void(0)"  (click)="activeInactiveLocation(location.guid,location.isActive,location.name)" class="instance-status-info" style="
+                          margin-left: 99%;
+                          padding-top: 5px;
+                          padding-bottom: 20px;">
+                <span *ngIf="location.isActive" class="user-status-type status-green"></span>
+                <span *ngIf="!location.isActive" class="user-status-type status-red"></span>
+        </a>
+          <!-- <ul style="margin-left: 95%;" class="legend-list mb-0 ">
+            <li (click)="activeInactiveLocation(location.guid,location.isActive,location.name)">
+              <span *ngIf="location.isActive else Inactive" class="user-status-type status-green"></span>
+              <ng-template #Inactive> <span class="user-status-type status-red"></span></ng-template>
+            </li>
+          </ul> -->
+          <div class="grid-inner-flex d-flex align-items-center flex-wrap machine-location-box">
+            <div class="user-image-box">
+              <img alt="No image" class="img-fluid"
+              src="{{location['image'] == '00000000-0000-0000-0000-000000000000' || location['image'] == null || location['image'] == '' ? _appConstant.noImg: mediaUrl + location['image']}}"
+              >
+                   <!-- src={{imageBaseUrl+location.image}}> -->
+            </div>
+            <div class="user-detail-box m-b-10">
+              <div class="user-name">
+                <a [matTooltip]="location.name" matTooltipPosition='left' class="topwidget-title-link"[routerLink]="['/locations/detail/',location.guid]" href="javascript:;">
+                  <span>
+                    {{location.name}}
+                  </span>
+                </a>
+              </div>
+              <div class="d-flex location-details-list">
+                <span>Zone</span>
+                <strong style="margin-left: 54px;">{{location.totalSubEntities}}</strong>
+              </div>
+              <div class="d-flex location-details-list">
+                <span>Assets</span>
+                <strong style="margin-left: 54px;">{{location.totalDevices}}</strong>
+              </div>
+              <div class="d-flex location-details-list">
+                <span>Alerts (This Month) &nbsp;</span>
+               <a [routerLink]="['/alerts/location/',location.guid]" ><strong> {{location.totalAlerts}}</strong></a>
+              </div>
+            </div>
+            
+          </div>
+          <div class="user-actions d-flex flex-wrap">
+            <div class="user-actions-cta text-center">
+              <a class="green" [routerLink]="['/locations/',location.guid]" title="Edit">
+                <img src="../../../assets/images/edit_icon.svg">
+              </a>
+            </div>
+            <div class="user-actions-cta text-center">
+              <a (click)="deleteModel(location)" href="javascript:;" title="Delete">
+                <img alt="View" src="../../../assets/images/delete_icon.svg">
+              </a>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+      <div *ngIf="locationList.length==0" class="text-center m-auto d-flex align-items-center" style="height: 100px">No location exists.</div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+<div class="drag-body dashboard-widget">
+	<div class="panel-heading" [ngStyle]="{'background':widget?.widgetProperty?.background}">
+		<h5 class="panel-title"
+		[ngStyle]="{'font-size':widget.widgetProperty?.contents?.entities?.fontSize+'px','font-family':widget.widgetProperty?.contents?.entities?.fontFamily,'color':widget.widgetProperty?.contents?.entities?.fontColor}"> {{widget?.widgetProperty?.contents?.entities?.title}} </h5>
+		<div class="tab-link-bar">
+		</div>
+	</div>
+	<mat-card class="dashboard-card mat-card slick-carousel-mat-card">
+		<div class="row">
+			<ngx-slick-carousel class="carousel w-100" #refrigeratorCarousel="slick-carousel" [config]="slideConfig">
+				<li ngxSlickItem class="carousel-list-item" *ngFor="let location of overviewStaticsByEntity; let i = index;">
+					<div class="" (click)="getEntityDetails(location.guid, i);" style="cursor:pointer" [ngClass]="entitySelected == i ? 'selected-location-box' : '' ">
+						<div class="building-small-list-box">
+							<h3 class="building-list-title building-text-wrap">{{location.name}}</h3>
+							<div class="building-list-details">
+								<ul class="list-unstyled">
+									<li>
+										<span>Zone</span> <span>{{location.totalSubEntities}}</span>
+									</li>
+									<li>
+										<span>Assets</span> <span>{{location.totalDevices}}</span>
+									</li>
+									<li>
+										<span>Alerts (This Month)</span> <span>{{location.totalAlerts}}</span>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</li>
+			</ngx-slick-carousel>
+			<div *ngIf="overviewStaticsByEntity.length <= 0" style="height: 90px;" class="centerclass no-records-wrapper">No locations found</div>
+		</div>
+		<div class="counter-combined-widgets">
+			<div class="row align-items-stretch">
+				<div class="col-xl-3 col-lg-3">
+					<div class="dashboard-chart bgbluewidget text-center" style="padding: 0 15px;margin-bottom: 30px;">
+						<h4>{{entityDetails?.totalAvailable ? entityDetails?.totalAvailable:0}}</h4>
+						<p class="small-widget-heading">Available</p>
+					</div>
+				</div>
+				<div class="col-xl-3 col-lg-3">
+					<div class="dashboard-chart bgbluewidget text-center" style="padding: 0 15px;margin-bottom: 30px;">
+						<h4>{{entityDetails?.totalUtilized ? entityDetails?.totalUtilized:0}}</h4>
+						<p class="small-widget-heading">Utilized</p>
+					</div>
+				</div>
+				<div class="col-xl-3 col-lg-3">
+					<div class="dashboard-chart bgbluewidget text-center" style="padding: 0 15px;margin-bottom: 30px;">
+						<h4>{{entityDetails?.totalUnderMaintenanceCount ? entityDetails?.totalUnderMaintenanceCount: 0}}</h4>
+						<p class="small-widget-heading">Under Maintenance</p>
+					</div>
+				</div>
+				<div class="col-xl-3 col-lg-3">
+					<div class="dashboard-chart bgbluewidget text-center" style="padding: 0 15px;margin-bottom: 30px;">
+						<h4>{{entityDetails?.totalScheduledCount?entityDetails?.totalScheduledCount : 0}}</h4>
+						<p class="small-widget-heading">Scheduled Maintenance</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</mat-card>
+</div>

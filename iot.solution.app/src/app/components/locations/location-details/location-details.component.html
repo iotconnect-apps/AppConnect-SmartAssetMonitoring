@@ -1,0 +1,414 @@
+<section class="content-header">
+  <div class="detail-header-left">
+    <a (click)="location.back();" class="back-title-link" href="javascript:;">
+      <i class="fa fa-angle-left"></i>
+    </a>
+    <span class="building-detail-address">
+      <i class="fas fa-map-pin"></i>
+      {{locationObj?.name}}
+    </span>
+  </div>
+</section>
+<mat-tab-group animationDuration="0ms" class="asp-tab-style">
+  <mat-tab label="Statistcs">
+    <ng-template matTabContent>
+      <div class="row">
+        <div class="drag-body dashboard-widget m-b-30 col-lg-6">
+          <div class="panel-heading">
+            <h5 class="panel-title">Current Statistcs</h5>
+          </div>
+          <div class="dashboard-card mat-card">
+            <div>
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="connected-disconnected-item connected ">
+                    <div class="connected-disconnected-data-wrapper">
+                      <div class="connected-disconnected-data-item">
+                        <div class="connected-disconnected-data">
+                          {{statisticObj.totalAvailable}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="connected-disconnected-tile">Available</div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="connected-disconnected-item connected">
+                    <div class="connected-disconnected-data-wrapper">
+                      <div class="connected-disconnected-data-item">
+                        <div class="connected-disconnected-data">
+                          {{statisticObj.totalUtilized}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="connected-disconnected-tile">Utilized</div>
+                  </div>
+                </div>
+              </div>
+              <br />
+              <div class="row">
+                <div class="col-lg-6">
+                <div class="connected-disconnected-item connected">
+                  <div class="connected-disconnected-data-wrapper">
+                    <div class="connected-disconnected-data-item">
+                      <div class="connected-disconnected-data">
+                        {{statisticObj.totalUnderMaintenanceCount}}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="connected-disconnected-tile">Under <br />Maintenance</div>
+                </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="connected-disconnected-item connected">
+                    <div class="connected-disconnected-data-wrapper">
+                      <div class="connected-disconnected-data-item">
+                        <div class="connected-disconnected-data">
+                          {{statisticObj.totalScheduledCount}}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="connected-disconnected-tile">Scheduled <br />Maintenance</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="drag-body dashboard-widget m-b-30 col-lg-6">
+          <div class="panel-heading">
+            <h5 class="panel-title"> Avg. Assets Utilization </h5>
+            <div class="ml-auto">
+              <form>
+                <mat-form-field class="mb-0">
+                  <mat-select placeholder="Select Dashboard" [(ngModel)]="defaultFilterValue" name="assetUtilization"
+                    (selectionChange)="changeFilterAsset($event)">
+                    <mat-option *ngFor="let item of filterType" [value]="item?.value">
+                      {{item.name}}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </form>
+            </div>
+          </div>
+          <mat-card class="dashboard-card mat-card">
+            <div class="chart-data d-flex align-items-center justify-content-center h-100">
+              <div
+                *ngIf="assetUtilizationNoDataFound"
+                class="text-center d-flex align-items-center justify-content-center" style="height: 300px;">
+                No data found
+              </div>
+              <circle-progress
+                *ngIf="!assetUtilizationNoDataFound"
+                [percent]="assetUtilization"
+                [radius]="100"
+                [outerStrokeWidth]="10"
+                [innerStrokeWidth]="0"
+                [outerStrokeColor]="'#40c263'"
+                [innerStrokeColor]="'#C7E596'"
+                [animation]="true"
+                [animationDuration]="300"
+                [showTitle]="true"
+                [showSubtitle]="false"
+                [titleFontSize]="30"
+                [unitsFontSize]="30"
+              ></circle-progress>
+
+            </div>
+          </mat-card>
+        </div>
+        
+        
+      </div>
+      <div class="row">
+        <div class="drag-body dashboard-widget m-b-30 col-lg-12">
+          <div class="panel-heading">
+            <h5 class="panel-title"> Usage by Asset Type </h5>
+            <div class="ml-auto">
+              <form>
+                <mat-form-field class="mb-0">
+                  <mat-select placeholder="Select Dashboard" [(ngModel)]="defaultFilter" name="usageByAssetType"
+                    (selectionChange)="changeFilterAssetType($event)">
+                    <mat-option *ngFor="let item of filterType" [value]="item?.value">
+                      {{item.name}}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </form>
+            </div>
+          </div>
+         
+          <mat-card class="dashboard-card mat-card">
+            <div class="chart-data d-flex align-items-center justify-content-center h-100">
+              <div *ngIf="companyUsageChartData && companyUsageChartData.length" class="row w-100">
+                <div class="col-lg-6" *ngFor="let asset of companyUsageChartData">
+                  <div class="">
+                    <p>{{asset.name}}</p>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar " role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                         [ngStyle]="{ 'width' : asset.utilizationPer + '%', 'background' : asset.color }">
+                      {{ asset.utilizationPer }}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+             
+
+              <div *ngIf="!companyUsageChartData || !companyUsageChartData.length"
+                   class="text-center d-flex align-items-center justify-content-center" style="height: 350px;">
+                No data found
+              </div>
+            </div>
+          </mat-card>
+        </div>
+      </div>
+    </ng-template>
+  </mat-tab>
+  <mat-tab label="Assets">
+    <ng-template matTabContent>
+      <div class="map-list-wrapper">
+        <section class="content-header p-t-10">
+          <!-- <form> -->
+            <!-- <div class="instance-status-details m-r-20"> -->
+              <div class="d-flex flex-wrap align-items-center">
+                <div class="col">
+                  <div class="instance-status-info">
+                    <span class="user-status-type status-green">Active</span>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="instance-status-info">
+                    <span class="user-status-type status-red">Inactive</span>
+                  </div>
+                </div>
+              </div>
+            <!-- </div> -->
+          <!-- </form> -->
+          <div class="ml-auto content-header-action">
+            <ul class="legend-list mb-0 m-r-10">
+              <li><span class="status-available"></span>Connected</li>
+              <li><span class="status-unavailable"></span>Disconnected</li>
+            </ul>
+          </div>
+        </section>
+        <div class="row">
+          <div class="col-ld-3 col-lg-6 col-xl-4 m-b-30" *ngFor="let asset of assetList">
+            <div class="user-grid-box" style="padding-top: 5px;">
+              
+              <div class="instance-status-info" style="
+                          margin-left: 99%;
+                          padding-top: 0px; margin-top: 0px; padding-bottom: 20px;">
+                          <a href="javascript:void(0)" (click)="changeAssetStatusModel(asset)" ><span class="user-status-type"
+                          [ngClass]="(asset.isActive) ? 'status-green' : 'status-red' "></span></a>
+              </div>
+              <div class="grid-inner-flex d-flex align-items-center">
+                <div class="user-image-box">
+                  <img *ngIf="!asset.image" src="{{_appConstant.noImg}}" class="img-fluid" alt="">
+                  <img *ngIf="asset.image" src="{{imgUrl + asset.image}}" class="img-fluid" alt="">
+                </div>
+                <div class="user-detail-box">
+                  <h3 class="user-name">
+                    <span class="status-indicator m-r-5"
+                      [ngClass]="(asset.isConnected) ? 'status-green' : 'status-red' "></span>
+                    <a [routerLink]="['/assets/dashboard/',asset.guid]">{{asset.name}}</a>
+                  </h3>
+                  <div class="d-flex location-details-list">
+                    <span>Zone</span>
+                    <strong>{{asset.subEntityName}}</strong>
+                  </div>
+                  <div class="d-flex location-details-list">
+                    <span>Utilization</span>
+                    <strong>{{asset.utilization}}</strong>
+                  </div>
+                  <div class="d-flex location-details-list">
+                    <span>Alerts</span>
+                    <strong>{{asset.totalAlerts}}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="user-actions d-flex flex-wrap">
+              </div>
+            </div>
+          </div>
+          <div *ngIf="assetList.length === 0" class="centerclass">No records found</div>
+        </div>
+      </div>
+    </ng-template>
+  </mat-tab>
+  <mat-tab label="Alerts">
+    <ng-template matTabContent>
+      <div class="panel-heading">
+        <div style="text-align: right;" class="tab-link-bar">
+          <a [routerLink]="['/alerts']" [queryParams]="{locationGuid:locationGuid}" href="javascript:;">View All</a>
+        </div>
+      </div>
+      <div class="content p-t-0">
+        <div class="table-container">
+          <table mat-table [dataSource]="alerts" matSort class="mat-elevation-z8" (matSortChange)="setOrder($event)"
+            matSortActive="firstName" matSortDirection="asc" matSortDisableClear>
+            <!-- Name Column -->
+            <ng-container matColumnDef="message">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Message </th>
+              <td mat-cell *matCellDef="let element"> {{element.message}}</td>
+            </ng-container>
+            <ng-container matColumnDef="deviceName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Asset</th>
+              <td mat-cell *matCellDef="let element">{{element.deviceName}}</td>
+            </ng-container>
+            <ng-container matColumnDef="entityName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Location</th>
+              <td mat-cell *matCellDef="let element">{{element.entityName}}</td>
+            </ng-container>
+            <ng-container matColumnDef="subEntityName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Zone</th>
+              <td mat-cell *matCellDef="let element">{{element.subEntityName}}</td>
+            </ng-container>
+            <ng-container matColumnDef="severity">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Severity</th>
+              <td mat-cell *matCellDef="let element">{{element.severity}}</td>
+            </ng-container>
+            <ng-container matColumnDef="eventDate">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+              <td mat-cell *matCellDef="let element">{{element.eventDate}}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+          <div *ngIf="alerts.length === 0 || totalRecords === 0 " class="centerclass">No records found</div>
+        </div>
+      </div>
+    </ng-template>
+  </mat-tab>
+</mat-tab-group>
+
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="drag-body dashboard-widget">
+      <div class="panel-heading">
+        <h5 class="panel-title"> Zones</h5>
+        <ul class="filter-for-chart">
+          <li>
+            <button [disableRipple]="true" mat-icon-button>
+              <mat-icon>more_horiz</mat-icon>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <mat-card class="dashboard-card mat-card">
+        <div class="cropscontainer facility-user-grid-box-container">
+          <div class="user-grid-box m-r-20 m-b-20" *ngFor="let zone of zoneList">
+            <div class="text-center text-center m-r-20 m-l-20">
+              <div class="crops-img-box">
+                <img alt="" class="img-fluid"
+                  src="{{zone.image == '00000000-0000-0000-0000-000000000000' || zone.image == null ||  zone.image == '' ? _appConstant.noImg: imgUrl + zone.image}}">
+              </div>
+              <p class="user-grid-desc" title="{{zone.name}}">{{zone.name}}</p>
+            </div>
+            <div class="user-actions d-flex flex-wrap">
+              <div class="user-actions-cta text-center ng-star-inserted">
+                <a class="green" href="javascript:;">
+                  <img alt="Edit" src="../../../assets/images/icon-edit.svg" (click)="getZoneDetails(zone.guid);">
+                </a>
+              </div>
+              <div class="user-actions-cta text-center">
+                <a class="red" href="javascript:void(0)" data-toggle="modal" data-target="#deviceDeleteModal"
+                  (click)="deleteModel(zone)" title="Delete">
+                  <img src="./assets/images/icon-delete.svg">
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="user-grid-box bigaddbutton m-b-20">
+            <a title="Add New Zone" style="cursor:pointer" href="javascript:void(0);" (click)="respond();">
+              <i class="material-icons">add</i>
+            </a>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+</div>
+
+<section class="create-drawer transform" *ngIf="respondShow">
+  <div class="head">
+    <a class="closedrawer" (click)="closeRepond()">
+      <i class="material-icons">close</i>
+    </a>
+    <h2>{{zoneModuleName}}</h2>
+  </div>
+  <div class="form-container">
+    <div class="view-form">
+      <form [formGroup]="zoneForm" (ngSubmit)="manageZone();" autocomplete="off" class="form-horizontal common-form">
+        <div class="row">
+          <div class="col-12">
+            <fieldset class="form-group form-field">
+            <label class="form-label">Name<b>*</b></label>
+            <mat-form-field>
+              <input matInput name="name" formControlName="name" type="text" maxlength="50"
+                [(ngModel)]="zoneObj['name']" class="form-control" tabindex="1" placeholder="Name">
+              <div class="form-control-feedback" *ngIf="zoneForm.controls['name'].errors">
+                <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                  *ngIf="zoneForm.controls['name'].errors.required && checkSubmitStatus">
+                  Please enter Name
+                </p>
+              </div>
+            </mat-form-field>
+          </fieldset>
+          </div>
+          
+          <div class="col-12">
+            <label class="form-label">Description</label>
+            <mat-form-field>
+              <textarea matInput rows="3" class="form-control" formControlName="description" placeholder="Description"
+                name="description" [(ngModel)]="zoneObj['description']" maxlength="255" tabindex="3"></textarea>
+            </mat-form-field>
+          </div>
+          <div class="col-12">
+            <label for="myFile" class="upload-file">
+              <input formControlName="imageFile" #myFile id="myFile" (change)="handleImageInput($event)"
+                class="upload-image" type="file" tabindex="4" accept=".jpg, .jpeg, .png" />
+              <div class="form-control-feedback" *ngIf="zoneForm.controls['imageFile'].errors">
+                <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+                  *ngIf="zoneForm.controls['imageFile'].errors.required && checkSubmitStatus">
+                  Upload Image
+                </p>
+              </div>
+            </label>
+            <fieldset class="form-group">
+              <ul class="image-list ">
+                <li>
+                  <div class="user-profle-image">
+                    <img *ngIf="zoneObj['image'] != '00000000-0000-0000-0000-000000000000' && zoneObj['image'] != null && zoneObj['image'] != ''" (click)="imageRemove()" class="close-icn"
+                      src="../../../../assets/images/cancel-dashboard.svg" alt="">
+                    <img alt="" class="img-fluid"
+                      src="{{zoneObj['image'] == '00000000-0000-0000-0000-000000000000' || zoneObj['image'] == null || zoneObj['image'] == '' ? _appConstant.noImg:  zoneObj['image']}}" />
+                    
+
+                  </div>
+                </li>
+              </ul>
+            </fieldset>
+            <p>{{fileName}}</p>
+            <div class="row">
+              <div class="col-12 mt-4">
+                <div class="form-field">
+                  <div class="input-field ">
+                    <button mat-flat-button color="primary" class="text-white " title="{{buttonName}}" type="submit">
+                      {{buttonName}}
+                    </button>
+                    <button mat-flat-button color="primary" class="text-white m-l-10" (click)="closeRepond()"
+                      title="Cancel">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,167 @@
+<!-- Content Header (Page header) -->
+
+<section class="content-header">
+  <h1>Add Asset Type</h1>
+</section>
+<!-- Main content -->
+
+<section class="content">
+  <mat-card class="support-card">
+    <div class="row">
+      <div class="col col-ld-11">
+        <form [formGroup]="assetTypeForm" (ngSubmit)="manageAssetType()" autocomplete="off" class="form-horizontal common-form">
+          <div class="row">
+            <div class="col-md-6">
+              <fieldset class="form-group form-field">
+                <label class="form-label">Asset Type Name<b>*</b></label>
+                <mat-form-field>
+                  <input matInput name="name" formControlName="name"
+                         type="text" maxlength="50" [(ngModel)]="assetTypeObject['name']"
+                         class="form-control" tabindex="1" placeholder="Name" >
+                  <div class="form-control-feedback" *ngIf="assetTypeForm.controls['name'].errors">
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['name'].errors.required && checkSubmitStatus">
+                      Please enter Asset Type Name
+                    </p>
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['name'].hasError('whitespace')">
+                      Please enter valid data
+                    </p>
+                  </div>
+                </mat-form-field>
+              </fieldset>
+            </div>
+            <div class="col-md-6">
+              <fieldset class="form-group form-field">
+                <label class="form-label">Description<b>*</b></label>
+                <mat-form-field>
+                  <textarea matInput rows="3" class="form-control" formControlName="description" placeholder="Description"
+                            name="description" [(ngModel)]="assetTypeObject['description']" maxlength="255" tabindex="1"></textarea>
+                  <div class="form-control-feedback" *ngIf="assetTypeForm.controls['description'].errors">
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['description'].errors.required && checkSubmitStatus">
+                      Please enter Description
+                    </p>
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['description'].hasError('whitespace')">
+                      Please enter valid data
+                    </p>
+                  </div>
+                </mat-form-field>
+              </fieldset>
+            </div>
+            <div class="col-md-6">
+              <fieldset class="form-group form-field">
+                <label class="form-label">Make<b>*</b></label>
+                <mat-form-field>
+                  <input matInput name="make" formControlName="make" type="text" maxlength="50" [(ngModel)]="assetTypeObject['make']"
+                         class="form-control" tabindex="1" placeholder="Enter Make">
+                  <div class="form-control-feedback" *ngIf="assetTypeForm.controls['make'].errors">
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['make'].errors.required && checkSubmitStatus">
+                      Please enter Make
+                    </p>
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['make'].hasError('whitespace')">
+                      Please enter valid data
+                    </p>
+                  </div>
+                </mat-form-field>
+              </fieldset>
+            </div>
+            <div class="col-md-6">
+              <fieldset class="form-group form-field">
+                <label class="form-label">Model<b>*</b></label>
+                <mat-form-field>
+                  <input matInput name="model" formControlName="model" type="text" maxlength="50" [(ngModel)]="assetTypeObject['model']"
+                         class="form-control" tabindex="1" placeholder="Enter Model">
+                  <div class="form-control-feedback" *ngIf="assetTypeForm.controls['model'].errors">
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['model'].errors.required && checkSubmitStatus">
+                      Please enter Model
+                    </p>
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['model'].hasError('whitespace')">
+                      Please enter valid data
+                    </p>
+                  </div>
+                </mat-form-field>
+              </fieldset>
+            </div>
+            <div class="col-md-6">
+              <fieldset class="form-group form-field">
+                <label class="form-label">Manufacturer<b>*</b></label>
+                <mat-form-field>
+                  <input matInput name="manufacturer" formControlName="manufacturer" type="text" maxlength="50" [(ngModel)]="assetTypeObject['manufacturer']"
+                         class="form-control" tabindex="1" placeholder="Enter Manufacturer">
+                  <div class="form-control-feedback" *ngIf="assetTypeForm.controls['manufacturer'].errors">
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['manufacturer'].errors.required && checkSubmitStatus">
+                      Please enter Manufacturer
+                    </p>
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['manufacturer'].hasError('whitespace')">
+                      Please enter valid data
+                    </p>
+                  </div>
+                </mat-form-field>
+              </fieldset>
+            </div>
+            <div class="col-md-6">
+              <fieldset class="form-group form-field">
+                <label class="form-label">Location<b>*</b></label>
+                <mat-form-field class="">
+                  <mat-select placeholder="Select Location" formControlName="entityGuid" [(ngModel)]="assetTypeObject['entityGuid']">
+                    <mat-option *ngFor="let location of locationList" [value]="location.value | lowercase">
+                      {{location.text}}
+                    </mat-option>
+                  </mat-select>
+                  <div class="form-control-feedback" *ngIf="assetTypeForm.controls['entityGuid'].errors">
+                    <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['entityGuid'].errors.required && checkSubmitStatus">
+                      Please select Location
+                    </p>
+                  </div>
+                </mat-form-field>
+              </fieldset>
+            </div>
+            <div class="col-md-6">
+              <fieldset class="form-group form-field">
+                <label class="form-label">Device Template<b>*</b></label>
+                <mat-form-field class="">
+                  <mat-select placeholder="Select Template" formControlName="templateGuid" [(ngModel)]="assetTypeObject['templateGuid']">
+                    <mat-option *ngFor="let template of templateList" [value]="template.value | lowercase">
+                      {{template.text}}
+                    </mat-option>
+                  </mat-select>
+                  <div class="form-control-feedback" *ngIf="assetTypeForm.controls['templateGuid'].errors">
+                    <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+                       *ngIf="assetTypeForm.controls['templateGuid'].errors.required && checkSubmitStatus">
+                      Please select Device Template
+                    </p>
+                  </div>
+                </mat-form-field>
+              </fieldset>
+            </div>
+          </div>
+          <div class="row mt-4 mb-0">
+            <div class="col-lg-12">
+              <div class="form-field">
+                <div class="input-field ">
+                  <button mat-flat-button color="primary"
+                          class="text-white" [title]="buttonName" type="submit">
+                    {{buttonName}}
+                  </button>
+                  <button mat-flat-button color="primary" class="text-white m-l-10" [routerLink]="['/assets-types']"
+                          title="Cancel">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </mat-card>
+</section>

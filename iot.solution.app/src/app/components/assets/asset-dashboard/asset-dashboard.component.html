@@ -1,0 +1,198 @@
+<section class="content-header">
+  <h1>
+    <a (click)="location.back();" class="back-title-link" href="javascript:;">
+      <i class="fa fa-angle-left"></i>
+    </a>
+    Assets
+  </h1>
+</section>
+<div class="content">
+  <div class="building-details-wrapper row">
+    <div class="col-md-12 col-lg-3">
+      <div class="drag-body dashboard-widget refrigerator-details-card m-b-30">
+        <div class="panel-heading">
+          <h5 class="panel-title p-l-10 p-r-10">
+            <span class="status-indicator m-r-5"
+                  [ngClass]="(deviceIsConnected) ? 'status-green' : 'status-red' "></span>
+            <span  [matTooltip]="assetObject.name ? assetObject.name : '' " matTooltipPosition="right">{{assetObject.name ? assetObject.name : '' }}</span>
+          </h5>
+        </div>
+        <mat-card class="dashboard-card mat-card ">
+          <div class="elevator-details-wrapp">
+            <div class="elevator-image-box m-b-45">
+              <img *ngIf="this.assetObject.deviceImageFiles == ''"
+                   class="img-fluid" alt="" src="../../../../assets/images/noimage.svg">
+              <ngx-slick-carousel class="carousel ref-dashboard-carousel"
+                                  #refrigeratorCarousel="slick-carousel"
+                                  [config]="slideConfig">
+                <div ngxSlickItem *ngFor="let imagesdata of this.assetObject.deviceImageFiles">
+                  <div class="user-grid-box p-0">
+                    <div class="grid-inner-flex d-flex align-items-center p-0">
+                      <!-- <div class="user-image-box">
+                        <img alt="" class="img-fluid ng-star-inserted"
+                          src="../../../../assets/images/refrigerator-image.svg">
+                      </div>            -->
+                      <div class="user-detail-box">
+                        <img alt="" class="img-fluid"
+                             src="{{imgUrl + imagesdata.filePath}}" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ngx-slick-carousel>
+            </div>
+            <!--<div class="elevator-image-box">
+              <img class="img-fluid" alt="" src="../../../../assets/images/noimage.svg">
+            </div>-->
+
+            <div class="dark-card-box support-package-dark-card-box m-t-15"
+                 *ngIf="mediaFiles.length">
+              <div class="dark-card-header">
+                <div class="dark-card-header-left">
+                  <div class="dark-card-header-title"><span>Media Files</span></div>
+                </div>
+              </div>
+              <div class="dark-card-body p-b-0">
+                <a href="javascript:;" class="media-files-link"
+                   *ngFor="let filedata of mediaFiles"
+                   (click)="downloadPdf(filedata.filePath,filedata.description,filedata.fileName.split('.').slice(1, 2).join('.'))"
+                   [matTooltip]="filedata.description ? filedata.description : 'N/A'"
+                   matTooltipPosition="below">
+                  <i class="fas fa-file-pdf"
+                     *ngIf="filedata.fileName.split('.').slice(1, 2).join('.') == 'pdf'"></i>
+                  <i class="fas fa-file-word"
+                     *ngIf="filedata.fileName.split('.').slice(1, 2).join('.') == 'docx' ||
+                    filedata.fileName.split('.').slice(1, 2).join('.') == 'doc'"></i>
+                </a>
+              </div>
+            </div>
+
+            <div class="elevator-details-box">
+              <h3 class="details-title">Description</h3>
+              <div [innerHTML]="this.assetObject.description" class="description-box"></div>
+            </div>
+            <div class="elevator-specs-list">
+              <h3 class="specs-title">Specifications</h3>
+              <div [innerHTML]="assetObject.specification"></div>
+            </div>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+    <div class="col-lg-9">
+      <div class="row">
+        <div class="col-md-12 col-lg-7">
+
+          <div class="drag-body dashboard-widget building-details-widget elevator-widget-card m-b-30">
+            <div class="panel-heading">
+              <h5 class="panel-title"> Asset Utilization </h5>
+              <div class="m-r-20">
+                <mat-radio-group (change)="changeGraphFilter($event)" aria-label="Select an option" class="d-flex align-items-center">
+                  <mat-radio-button checked value="Week">Week</mat-radio-button>
+                  <mat-radio-button value="Month">Month</mat-radio-button>
+                  <mat-radio-button value="Year">Year</mat-radio-button>
+                </mat-radio-group>
+              </div>
+            </div>
+            <mat-card class="dashboard-card mat-card">
+              <google-chart *ngIf="columnChart.dataTable.length" [data]="columnChart"></google-chart>
+              <div *ngIf="!columnChart.dataTable.length"
+                   class="text-center d-flex align-items-center justify-content-center" style="height: 350px;">
+                No data found
+              </div>
+            </mat-card>
+          </div>
+        </div>
+        <div class="col-md-12 col-lg-5">
+          <div class="dashboard-chart bggreenlwidget text-center hour-module-widget m-b-20"
+               *ngIf="maintenanceSchescheduled">
+            <h4>{{getLocalDate(maintenanceStartDate) | date:'fullDate'}}</h4>
+            <p class="small-widget-heading">
+              <span class="d-block">Time Left: {{maintenanceSchescheduled}}</span>
+              Maintenance Scheduled
+            </p>
+          </div>
+          <div class="drag-body dashboard-widget elevator-widget-card m-b-30">
+            <div class="panel-heading">
+              <h5 class="panel-title alerts-title"> Alerts </h5>
+              <div style="margin-right: 20px;" class="tab-link-bar">
+                <a [routerLink]="['/alerts/asset/',assetGuid]" href="javascript:;" *ngIf="alerts?.length > 0">View All</a>
+              </div>
+            </div>
+            <mat-card class="dashboard-card mat-card">
+              <ng-scrollbar class="my-scrollbar m-b-50" trackX="false" trackY="true"
+                            autohide="false" [compact]="false" *ngIf="alerts?.length>0">
+                <ul class="alerts-dashboard asset-dashboard-alerts">
+                  <li *ngFor="let alert of alerts" [ngClass]="alert['severity']">
+                    <span class="alerts-date">{{getLocalDate(alert['eventDate'])}}</span>
+                    <span class="alerts-info">{{alert['message']}}</span>
+                    <span class="alerts-location">{{alert['buildingName']}}</span>
+                  </li>
+                </ul>
+              </ng-scrollbar>
+              <div *ngIf="!alerts.length" class="centerclass"
+                   [ngStyle]="{ 'height': maintenanceSchescheduled ? '192px' : '260px' }"
+                   style="margin-bottom:40px;">
+                No records found
+              </div>
+              <div class="alert-indicator-wrapper">
+                <div class="alert-indicator-list">
+                  <div class="alert-indicator Critical">
+                    <span class="legend"></span>
+                    <span class="alert-text">Critical</span>
+                  </div>
+                  <div class="alert-indicator Information">
+                    <span class="legend"></span>
+                    <span class="alert-text">Information</span>
+                  </div>
+                  <div class="alert-indicator Major">
+                    <span class="legend"></span>
+                    <span class="alert-text">Major</span>
+                  </div>
+                  <div class="alert-indicator Minor">
+                    <span class="legend"></span>
+                    <span class="alert-text">Minor</span>
+                  </div>
+                  <div class="alert-indicator Warning">
+                    <span class="legend"></span>
+                    <span class="alert-text">Warning</span>
+                  </div>
+                </div>
+              </div>
+            </mat-card>
+          </div>
+        </div>
+        <div class="col-md-12 col-lg-12">
+          <div class="drag-body dashboard-widget elevator-widget-card">
+            <div class="panel-heading">
+              <h5 class="panel-title alerts-title"> Telemetry Data </h5>
+            </div>
+            <mat-card>
+              <div class="row">
+                <div class="col-lg-8">
+                  <!--<google-chart [data]="columnChart"></google-chart>-->
+                  <canvas baseChart [chartType]="'line'" [datasets]="datasets" [options]="optionsdata">
+                  </canvas>
+                </div>
+                <div class="col-lg-4 data-list-col">
+                  <ng-scrollbar class="my-scrollbar m-b-50" trackX="false" trackY="true"
+                                autohide="false" [compact]="false">
+                    <ul class="list-unstyled chart-data-details-list">
+                      <li *ngFor="let dataList of chartDataList; let i = index;"
+                          [ngClass]="{ 'selected-data-item' : activeListItem === i }"
+                          (click)="toggleDataList(i,dataList)">
+                        <span>{{dataList.attributeDisplayName}}</span>
+                        <span class="ml-auto">{{dataList.attributeValue}}</span>
+                      </li>
+                    </ul>
+                  </ng-scrollbar>
+                </div>
+              </div>
+            </mat-card>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
