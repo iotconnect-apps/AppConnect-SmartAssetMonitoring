@@ -1,15 +1,15 @@
 {
   "env": {
-      "name": "qa"
+      "name": ""
   },
   "apiServer": {
-    "baseUrl": "https://assetmonitoring.iotconnect.io:820/"
+    "baseUrl": "[YOUR API URL]"
   },
   "IdsServer": {
     "IDSAuthority": "https://login.iotconnect.io",
     "IDSClientID": "iotconnect.qa",
     "IDSScope": "openid profile iotconnect.user.api.fullaccess iotconnect.device.api.fullaccess iotconnect.firmware.api.fullaccess iotconnect.file.api.fullaccess iotconnect.master.api.fullaccess iotconnect.auth.api.fullaccess iotconnect.authorize.api.fullaccess iotconnect.company.api.fullaccess iotconnect.config.api.fullaccess iotconnect.event.api.fullaccess iotconnect.scheduler.api.fullaccess iotconnect.simulator.api.fullaccess iotconnect.telemetry.api.fullaccess iotconnect.solution.api.fullaccess",
-    "IDSArcValue": "solutionCode:7805efd8-bfb0-4003-801a-4b6e0bf3d68c",
-    "webUrl": "https://assetmonitoring.iotconnect.io"
+    "IDSArcValue": "solutionCode:[YOUR SOLUTION GUID]",
+    "webUrl": "[YOUR SOLUTION WEB URL]"
   }
 }
