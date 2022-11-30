@@ -11,6 +11,8 @@ using System.Data;
 using component.helper;
 using System.Linq;
 using LogHandler = component.services.loghandler;
+using Microsoft.EntityFrameworkCore;
+
 namespace iot.solution.model.Repository.Implementation
 {
     public class DashboardRepository:GenericRepository<Device>,IDashboardRepository
@@ -27,7 +29,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 _logger.InfoLog(Constants.ACTION_ENTRY, "GeneratorRepository.Get");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     DateTime dateValue;
                     if (DateTime.TryParse(currentDate.ToString(), out dateValue))
@@ -60,7 +62,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 _logger.InfoLog(Constants.ACTION_ENTRY, "GetStatisticsByEntity.Get");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     DateTime dateValue;
                     if (DateTime.TryParse(currentDate.ToString(), out dateValue))

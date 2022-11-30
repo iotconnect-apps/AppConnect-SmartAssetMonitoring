@@ -71,7 +71,7 @@ export class LeftMenuComponent implements OnInit {
         },
         {
           name: 'Assets',
-          link: '/assetss',
+          link: '/assets',
           li_color: '',
           icon: 'icon-assets',
           applylink: true

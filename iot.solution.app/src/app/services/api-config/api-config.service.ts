@@ -12,10 +12,10 @@ export class ApiConfigService {
   load() {
 
     const jsonFile = `assets/config.json`;
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<IAppConfig>((resolve, reject) => {
       this.http.get(jsonFile).toPromise().then((response: IAppConfig) => {
         ApiConfigService.settings = <IAppConfig>response;
-        resolve();
+        resolve(response);
       }).catch((response: any) => {
         reject(`Could not load the config file`);
       });
@@ -28,8 +28,10 @@ export interface IAppConfig {
   }
   apiServer: {
     baseUrl: string,
+    googleMapApiKey: string,
+    SignalRDataUrl: string
   },
-   IdsServer: {
+  IdsServer: {
     IDSAuthority: string,
     IDSClientID: string,
     IDSScope: string,

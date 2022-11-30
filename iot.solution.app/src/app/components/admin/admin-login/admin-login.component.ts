@@ -35,7 +35,8 @@ export class AdminLoginComponent implements OnInit {
     this.currentUser = JSON.parse(localStorage.getItem("currentUser"));
 		this.authService.logout();
 			if(this.currentUser.userDetail.isAdmin){
-				this.router.navigate(['/admin'])
+        this.router.navigateByUrl('/', { skipLocationChange: true }).then(() =>
+        this.router.navigate(['/admin']));
 			} else {
 				this.router.navigate(['/login'])
 			}

@@ -12,6 +12,9 @@ using System;
 using Entity = iot.solution.entity;
 using LogHandler = component.services.loghandler;
 using System.Linq;
+using component.helper.Interface;
+using iot.solution.common;
+using iot.solution.service.AppSetting;
 
 namespace iot.solution.service.Implementation
 {
@@ -20,10 +23,12 @@ namespace iot.solution.service.Implementation
         private readonly IEntityRepository _entityRepository;
         private readonly LogHandler.Logger _logger;
         public string ConnectionString = component.helper.SolutionConfiguration.Configuration.ConnectionString;
-         public ChartService(IEntityRepository entityRepository, LogHandler.Logger logger)//, LogHandler.Logger logger)
+        private readonly IEmailHelper _emailHelper;
+        public ChartService(IEntityRepository entityRepository, LogHandler.Logger logger, IEmailHelper emailHelper)//, LogHandler.Logger logger)
         {
             _entityRepository = entityRepository;
             _logger = logger;
+            _emailHelper = emailHelper;
         }
         public Entity.ActionStatus TelemetrySummary_DayWise()
         {
@@ -79,15 +84,15 @@ namespace iot.solution.service.Implementation
                 using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
-                   
+
                     parameters.Add(sqlDataAccess.CreateParameter("companyGuid", component.helper.SolutionConfiguration.CompanyId, DbType.Guid, ParameterDirection.Input));
                     if (request.EntityGuid != null && request.EntityGuid != Guid.Empty)
                     {
                         parameters.Add(sqlDataAccess.CreateParameter("parentEntityGuid", request.EntityGuid, DbType.Guid, ParameterDirection.Input));
                     }
-                   
+
                     parameters.Add(sqlDataAccess.CreateParameter("frequency", request.Frequency, DbType.String, ParameterDirection.Input));
-                   
+
                     parameters.Add(sqlDataAccess.CreateParameter("syncDate", DateTime.UtcNow, DbType.DateTime, ParameterDirection.Output));
                     parameters.Add(sqlDataAccess.CreateParameter("enableDebugInfo", component.helper.SolutionConfiguration.EnableDebugInfo, DbType.String, ParameterDirection.Input));
                     DbDataReader dbDataReader = sqlDataAccess.ExecuteReader(sqlDataAccess.CreateCommand("[Chart_UtilizationByDeviceType]", CommandType.StoredProcedure, null), parameters.ToArray());
@@ -111,7 +116,7 @@ namespace iot.solution.service.Implementation
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
 
-                    
+
                     if (request.DeviceGuid != null && request.DeviceGuid != Guid.Empty)
                     {
                         parameters.Add(sqlDataAccess.CreateParameter("guid", request.DeviceGuid, DbType.Guid, ParameterDirection.Input));
@@ -120,7 +125,7 @@ namespace iot.solution.service.Implementation
                     {
                         parameters.Add(sqlDataAccess.CreateParameter("entityGuid", request.EntityGuid, DbType.Guid, ParameterDirection.Input));
                     }
-                    
+
                     parameters.Add(sqlDataAccess.CreateParameter("frequency", request.Frequency, DbType.String, ParameterDirection.Input));
 
                     parameters.Add(sqlDataAccess.CreateParameter("syncDate", DateTime.UtcNow, DbType.DateTime, ParameterDirection.Output));
@@ -147,7 +152,7 @@ namespace iot.solution.service.Implementation
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
 
                     parameters.Add(sqlDataAccess.CreateParameter("companyGuid", component.helper.SolutionConfiguration.CompanyId, DbType.Guid, ParameterDirection.Input));
-                    
+
                     parameters.Add(sqlDataAccess.CreateParameter("frequency", request.Frequency, DbType.String, ParameterDirection.Input));
 
                     parameters.Add(sqlDataAccess.CreateParameter("syncDate", DateTime.UtcNow, DbType.DateTime, ParameterDirection.Output));
@@ -192,8 +197,41 @@ namespace iot.solution.service.Implementation
             }
             return result;
         }
-      
 
-        
+
+        public Entity.ActionStatus SendSubscriptionNotification()
+        {
+            Entity.ActionStatus actionStatus = new Entity.ActionStatus(true);
+            try
+            {
+                _logger.InfoLog(LogHandler.Constants.ACTION_ENTRY, null, "", "", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                {
+                    List<DbParameter> parameters = new List<DbParameter>();
+                    System.Data.Common.DbDataReader dbDataReader = sqlDataAccess.ExecuteReader(sqlDataAccess.CreateCommand("[Get_UserSubscriptionEndData]", CommandType.StoredProcedure, null), parameters.ToArray());
+                    var result = DataUtils.DataReaderToList<Response.SubscriptionEndData>(dbDataReader, null);
+                    foreach (var item in result)
+                    {
+                        _emailHelper.SendSubscriptionOverEmail(item.CustomerName, item.ExpiryDate.ToString("dd MMM yyy"), item.Email,
+                            ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpFromDisplayName.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpFromMail.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpRegards.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.PortalUrl.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EmailTemplateSubscriptionExpirySubject.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EmailTemplateSubscriptionExpiryUserList.ToString()));
+                    }
+                }
+                _logger.InfoLog(LogHandler.Constants.ACTION_EXIT, null, "", "", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+                actionStatus.Success = false;
+                actionStatus.Message = ex.Message;
+            }
+            return actionStatus;
+        }
+
     }
 }

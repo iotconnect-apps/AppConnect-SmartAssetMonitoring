@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser'
-import { NgModule,APP_INITIALIZER } from '@angular/core'
+import { NgModule, APP_INITIALIZER, Injectable } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators'
 import { HttpModule } from '@angular/http'
@@ -15,7 +15,7 @@ import { MomentDateTimeAdapter } from 'ng-pick-datetime-moment'
 import { MatButtonModule, MatCheckboxModule, MatInputModule, MatProgressBarModule, MatSelectModule, MatSlideToggleModule, MatTabsModule, MatRadioModule } from '@angular/material'
 import { Ng2GoogleChartsModule } from 'ng2-google-charts'
 import { FullCalendarModule } from '@fullcalendar/angular'
-import { AgmCoreModule } from '@agm/core'
+import { AgmCoreModule, LazyMapsAPILoaderConfigLiteral, LAZY_MAPS_API_CONFIG } from '@agm/core'
 import { AgmJsMarkerClustererModule } from '@agm/js-marker-clusterer'
 import { AgmDirectionModule } from 'agm-direction'
 
@@ -45,7 +45,7 @@ import { ChartsModule } from 'ng2-charts';
 import { CKEditorModule } from "ng2-ckeditor";
 
 import {
-	MessageDialogComponent,CallbackComponent,
+	MessageDialogComponent, CallbackComponent,
 	PaymentComponent, PurchasePlanComponent, RegisterComponent, BulkuploadAddComponent, AdminDashboardComponent, AdminLoginComponent, HomeComponent, UserListComponent, UserAddComponent,
 	FlashMessageComponent, ConfirmDialogComponent, DashboardComponent,
 	DeleteDialogComponent, ExtendMeetingComponent, FooterComponent,
@@ -53,10 +53,10 @@ import {
 	PageSizeRenderComponent, PaginationRenderComponent, ResetpasswordComponent,
 	SearchRenderComponent, SettingsComponent, MyProfileComponent, ChangePasswordComponent, SubscribersListComponent, HardwareListComponent, HardwareAddComponent, UserAdminListComponent,
 	AdminUserAddComponent, SubscriberDetailComponent,
-	 RolesListComponent, RolesAddComponent, AlertsComponent,
+	RolesListComponent, RolesAddComponent, AlertsComponent,
 	LocationListComponent, VendingMachinesListComponent, MaintenanceListComponent, ProductsListComponent, InventoryListComponent, AddLocationComponent, AddMachineComponent, LocationDetailsComponent,
-  VendingMachineDashboardComponent, ScheduleMaintenanceComponent, AddProductsComponent, AddInventoryComponent,
-  AssetTypesComponent, AddTypeComponent, AssetsListComponent, AssetDashboardComponent, AddAssetComponent,
+	VendingMachineDashboardComponent, ScheduleMaintenanceComponent, AddProductsComponent, AddInventoryComponent,
+	AssetTypesComponent, AddTypeComponent, AssetsListComponent, AssetDashboardComponent, AddAssetComponent,
 	DynamicDashboardComponent,
 	WidgetCounterAComponent,
 	WidgetCounterBComponent,
@@ -88,8 +88,9 @@ import { NgCircleProgressModule } from 'ng-circle-progress';
 /*Dynamic Dasboard Code*/
 import { GridsterModule } from 'angular-gridster2';
 import { ColorPickerModule } from 'ngx-color-picker';
-import {MatSliderModule} from '@angular/material/slider';
+import { MatSliderModule } from '@angular/material/slider';
 import { Ng5SliderModule } from 'ng5-slider';
+import { CommonService } from './services/common/common.service'
 /*Dynamic Dasboard Code*/
 
 const config: SocketIoConfig = { url: 'http://localhost:2722', options: {} };
@@ -102,11 +103,8 @@ const MY_NATIVE_FORMATS = {
 	dateA11yLabel: 'HH:mm',
 	monthYearA11yLabel: 'MMMM-YYYY'
 };
-export function initializeApp(appConfigService: ApiConfigService) {
-	return (): Promise<any> => {
-	  return appConfigService.load();
-	}
-}
+
+
 
 @NgModule({
 	declarations: [
@@ -163,16 +161,16 @@ export function initializeApp(appConfigService: ApiConfigService) {
 		AddMachineComponent,
 		LocationDetailsComponent,
 		VendingMachineDashboardComponent,
-	    ScheduleMaintenanceComponent,
-	    AddProductsComponent,
-	    AddInventoryComponent,
-	    CallbackComponent,
-	    AssetTypesComponent,
-	    AddTypeComponent,
-	    AssetsListComponent,
-	    AssetDashboardComponent,
-	    AddAssetComponent,
-	    DynamicDashboardComponent,
+		ScheduleMaintenanceComponent,
+		AddProductsComponent,
+		AddInventoryComponent,
+		CallbackComponent,
+		AssetTypesComponent,
+		AddTypeComponent,
+		AssetsListComponent,
+		AssetDashboardComponent,
+		AddAssetComponent,
+		DynamicDashboardComponent,
 		WidgetCounterAComponent,
 		WidgetCounterBComponent,
 		WidgetCounterCComponent,
@@ -222,7 +220,7 @@ export function initializeApp(appConfigService: ApiConfigService) {
 		OwlNativeDateTimeModule,
 		FullCalendarModule,
 		SocketIoModule.forRoot(config),
-		AgmCoreModule.forRoot({ apiKey: '[YOUR GOOGLE MAP API KEY]' }),
+		AgmCoreModule.forRoot({ apiKey: 'initialKey', libraries:['places'] }),
 		AgmJsMarkerClustererModule,
 		AgmDirectionModule,
 		TextMaskModule,
@@ -232,9 +230,9 @@ export function initializeApp(appConfigService: ApiConfigService) {
 		CKEditorModule,
 		NgSelectModule,
 		GaugeChartModule,
-	    ProgressBarModule,
-	    SlickCarouselModule,
-	    NgCircleProgressModule.forRoot({
+		ProgressBarModule,
+		SlickCarouselModule,
+		NgCircleProgressModule.forRoot({
 			// set defaults here
 			radius: 100,
 			outerStrokeWidth: 10,
@@ -242,8 +240,8 @@ export function initializeApp(appConfigService: ApiConfigService) {
 			outerStrokeColor: "#40c263",
 			innerStrokeColor: "#C7E596",
 			animationDuration: 300
-    	}),
-    	GridsterModule,
+		}),
+		GridsterModule,
 		ColorPickerModule,
 		MatSliderModule,
 		Ng5SliderModule
@@ -264,6 +262,7 @@ export function initializeApp(appConfigService: ApiConfigService) {
 		LocationService,
 		ApiConfigService,
 		DynamicDashboardService,
+		CommonService,
 		AppConstant,
 		{
 			provide: DateTimeAdapter,
@@ -277,9 +276,20 @@ export function initializeApp(appConfigService: ApiConfigService) {
 			useClass: JwtInterceptor,
 			multi: true
 		},
-		{ provide: APP_INITIALIZER,useFactory: initializeApp, deps: [ApiConfigService], multi: true}
+		{ provide: APP_INITIALIZER, useFactory: (googleMapsConfig: LazyMapsAPILoaderConfigLiteral, appConfigService: ApiConfigService) => () => AppInitService.Init(googleMapsConfig, appConfigService), deps: [LAZY_MAPS_API_CONFIG, ApiConfigService], multi: true }
 	],
 	bootstrap: [AppComponent]
 })
 
 export class AppModule { }
+
+
+@Injectable()
+
+export class AppInitService {
+	public static Init(googleMapsConfig: LazyMapsAPILoaderConfigLiteral, appConfigService: ApiConfigService): Promise<any> {
+		return appConfigService.load().then((t: any) => {
+			googleMapsConfig.apiKey = t.apiServer.googleMapApiKey;
+		});
+	}
+}

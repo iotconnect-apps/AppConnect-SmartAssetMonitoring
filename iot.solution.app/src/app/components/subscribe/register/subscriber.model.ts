@@ -21,7 +21,7 @@ export class RequestSubscriberFormModel {
   @pattern({
     expression: {
       'email': /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      
+
     }, message: "Invalid Email"
   })
   email: string;
@@ -42,8 +42,8 @@ export class RequestSubscriberFormModel {
       'phone': /^(?!0+$)\d{8,}$/i
     }, message: "Please enter valid Phone Number."
   })
-  @minLength({ value: 8,message:'please enter minimum 8 digit' })
-  @maxLength({ value: 10,message:'please enter maximum 10 digit' })
+  @minLength({ value: 8, message: 'please enter minimum 8 digit' })
+  @maxLength({ value: 10, message: 'please enter maximum 10 digit' })
   phone: string = "";
 
   @required({ message: "Please select CountryCode" })

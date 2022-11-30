@@ -83,6 +83,26 @@ namespace host.iot.solution.Controllers
             }
             return response;
         }
-        
+
+        [HttpGet]
+        [AllowAnonymous]
+        [Route(ChartRoute.Route.ExecuteCrone, Name = ChartRoute.Name.ExecuteCrone)]
+        public Entity.BaseResponse<bool> ExecuteCrone()
+        {
+            Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
+            try
+            {
+                var res = _chartService.TelemetrySummary_HourWise();
+                var dayRes = _chartService.TelemetrySummary_DayWise();
+                response.IsSuccess = res.Success;
+            }
+            catch (Exception ex)
+            {
+                base.LogException(ex);
+                return new Entity.BaseResponse<bool>(false, ex.Message);
+            }
+            return response;
+        }
+
     }
 }

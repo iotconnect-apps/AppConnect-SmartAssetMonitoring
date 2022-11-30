@@ -69,51 +69,28 @@ export class JwtInterceptor implements HttpInterceptor {
           let params = {
             token: currentUser.refresh_token
           };
-          /* token refreshing request
-          return this.http.post(this._notificationService.apiBaseUrl + "api/account/refreshtoken", params).flatMap(
-            (response: any) => {
-              this._notificationService.refreshTokenInProgress = false;
-              //If reload successful update tokens
-              if (response.isSuccess == true) {
-                let currentUser = JSON.parse(localStorage.getItem('currentUser'));
-                if (response.data) {
-                  currentUser.access_token = response.data.access_token;
-                  currentUser.refresh_token = response.data.refresh_token;
-                  localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                }
-                //Clone our fields request and try to resend it
-                request = request.clone({
-                  setHeaders: {
-                    Authorization: `Bearer ${currentUser.access_token}`,
-                    'Content-Type': 'application/json',
-                    'company-id': currentUser.userDetail.companyId,
-                  }
-                });
-
-                return next.handle(request).catch((err: any) => {
-                  //Catch another error
-                  error = (err.error) ? err.error.Message : (err.statusText) ? err.statusText : this._appConstant.serverErrorMessage;
-                  return throwError(error);
-                });
-
-              } else {
-                //Logout from account
-                localStorage.removeItem('currentUser');
-                this._notificationService.add(new Notification('error', this._appConstant.tokenInValidMessage));
-                location.reload(true);
-                return;
-              }
-            }
-          ); */
+         
         }
       }
       if (err.status === 401 || !currentUser) {
         // auto logout on unauthorized response
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));      
+        let dataError:any=[];
+        dataError[0]=this._appConstant.unauthorizedMessage;      
+        this._notificationService.add(new Notification('error', dataError));
         localStorage.removeItem('currentUser');
-        this._notificationService.add(new Notification('error', this._appConstant.unauthorizedMessage));
-        location.reload(true);
-        return;
-      }
+        setTimeout(() => {  
+            if(currentUser.userDetail.isAdmin){
+            this.router.navigate(['/admin'])
+
+        } else {
+            this.router.navigate(['/login'])
+        }
+        return;        
+
+    }, 5000);
+
+    }
       return throwError(error);
     });
 

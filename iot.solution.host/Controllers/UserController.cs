@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web;
 using Entity = iot.solution.entity;
 
 namespace host.iot.solution.Controllers
@@ -128,7 +129,7 @@ namespace host.iot.solution.Controllers
                 response.Data = _service.List(new Entity.SearchRequest()
                 {
                      EntityId = !string.IsNullOrEmpty(entityGuid) ? Guid.Parse(entityGuid) : Guid.Empty,
-                    SearchText = searchText,
+                    SearchText = HttpUtility.UrlDecode(searchText),
                     PageNumber = pageNo.Value,
                     PageSize = pageSize.Value,
                     OrderBy = orderBy

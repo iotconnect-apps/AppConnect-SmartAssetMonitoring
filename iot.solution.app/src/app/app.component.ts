@@ -24,6 +24,7 @@ export class AppComponent {
 	isAdminLoading = false;
 	isAdmin = true;
 	checkedAfterLogin = false;
+	isCallBackURL = false;
 
 	constructor(
 		private renderer: Renderer2,
@@ -90,6 +91,10 @@ export class AppComponent {
 					this.titleService.setTitle('Smart Asset Monitoring' + ' - ' + title[0]);
 				} else {
 					this.titleService.setTitle('Smart Asset Monitoring ');
+				}
+
+				if (event.url.includes("callback")) {
+					this.isCallBackURL = true;
 				}
 
 				this.loginURL = event.url;

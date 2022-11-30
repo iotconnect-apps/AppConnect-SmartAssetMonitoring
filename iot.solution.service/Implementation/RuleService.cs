@@ -1,7 +1,10 @@
 ﻿using component.helper;
 using component.logger;
+using iot.solution.common;
 using iot.solution.model.Repository.Interface;
+using iot.solution.service.AppSetting;
 using iot.solution.service.Interface;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +19,14 @@ namespace iot.solution.service.Implementation
         private readonly IotConnectClient _iotConnectClient;
         private readonly INotificationsRepository _notificationsRepository;
         private readonly LogHandler.Logger _logger;
+        public  IConfiguration _configuration { get; set; }
 
-        public RuleService(INotificationsRepository notificationsRepository, LogHandler.Logger logger)
+        public RuleService(INotificationsRepository notificationsRepository, LogHandler.Logger logger, IConfiguration configuration)
         {
+            _configuration = configuration;
             _notificationsRepository = notificationsRepository;
             _logger = logger;
-            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, SolutionConfiguration.Configuration.EnvironmentCode, SolutionConfiguration.Configuration.SolutionKey);
+            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EnvironmentCode.ToString()), ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SolutionKey.ToString()));
         }
 
         public Entity.SearchResult<List<Entity.AlertResponse>> AlertList(Entity.AlertRequest request)

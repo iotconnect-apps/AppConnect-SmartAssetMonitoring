@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
-import { CanActivate, Router } from '@angular/router'
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router'
 import { BehaviorSubject } from 'rxjs';
-
+import { IDSAuthService } from './idsauth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -48,16 +48,26 @@ export class AuthService implements CanActivate {
 }
 
 export class AdminAuthGuard implements CanActivate {
-  constructor(private router: Router) { }
 
-  canActivate() {
-    if (this.isCheckLogin()) {
-      return true;
-    } else {
-      this.removeAllStorage();
-      this.router.navigate(['/login']);
-      return false;
+  constructor(private router: Router, private authService: IDSAuthService) { }
+
+  canActivate(_next: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+    if (state != undefined && state != null && state['url'] != undefined && state['url'] != null
+      && state['url'] != '' && state['url'] != '/home' && state['url'] != '/login' && state['url'] != '/login/callback' && state['url'] != '/signup') {
+      this.authService.browserCallBackURL = state.url;
     }
+    let currentURL = state.url;
+    let isLoggedIn2 = this.authService.isLoggedInObs();
+    isLoggedIn2.subscribe((loggedin) => {
+      if (loggedin) {
+        let currentUser = JSON.parse(localStorage.getItem('Partner_currentUser'));
+      }
+      else {
+        this.router.navigate(['/login']);
+      }
+      return true;
+    });
+    return isLoggedIn2;
   }
 
   isCheckLogin() {

@@ -18,5 +18,7 @@ namespace iot.solution.entity
         public string IoTConnectCompanyGuid { get; set; }
         public string Code { get; set; }
         public string Msg { get; set; }
+
+        public Guid ConsumerId { get; set; }
     }
 }

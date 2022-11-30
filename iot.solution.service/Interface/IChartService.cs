@@ -14,7 +14,7 @@ namespace iot.solution.service.Interface
         List<Response.DeviceTypeUsageResponse> GetDeviceTypeUsage(Request.ChartRequest request);
         List<Response.DeviceTypeUsageResponse> GetDeviceUsage(Request.ChartRequest request);
         List<Response.CompanyUsageResponse> GetCompanyUsage(Request.ChartRequest request);
-        
+        Entity.ActionStatus SendSubscriptionNotification();
         Entity.BaseResponse<List<Response.DeviceStatisticsResponse>> GetStatisticsByDevice(Request.ChartRequest request);
         
     }

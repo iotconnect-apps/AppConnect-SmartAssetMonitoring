@@ -268,7 +268,8 @@ export class ScheduleMaintenanceComponent implements OnInit {
 	 * Schedule/Update Maintenance
 	 * */
 	scheduleMaintenance() {
-		this.checkSubmitStatus = true;
+    this.checkSubmitStatus = true;
+    let successMessage = this._appConstant.msgCreated.replace("modulename", "Maintenance");
 		var maintenance = { ...this.maintenanceForm.value };
 		maintenance.startDateTime = moment(maintenance.startDateTime).format('YYYY-MM-DDTHH:mm:ss');
 		maintenance.endDateTime = moment(maintenance.endDateTime).format('YYYY-MM-DDTHH:mm:ss');
@@ -281,7 +282,8 @@ export class ScheduleMaintenanceComponent implements OnInit {
 			this.spinner.show();
 			let currentUser = JSON.parse(localStorage.getItem('currentUser'));
 			let data = maintenance;
-			if (this.isEdit) {
+      if (this.isEdit) {
+        successMessage = this._appConstant.msgUpdated.replace("modulename", "Maintenance");
 				data.entityGuid = this.maintenanceForm.get('entityGuid').value;
 				data.deviceGuid = this.maintenanceForm.get('deviceGuid').value;
 				data.guid = this.maintenanceGuid;
@@ -290,15 +292,11 @@ export class ScheduleMaintenanceComponent implements OnInit {
 			this._service.scheduleMaintenance(data).subscribe(response => {
 				if (response.isSuccess === true) {
 					this.spinner.hide();
-					if (this.isEdit) {
-						this._notificationService.add(new Notification('success', "Scheduled Maintenance has been updated successfully."));
-					} else {
-						this._notificationService.add(new Notification('success', "Scheduled Maintenance has been added successfully."));
-					}
+          this._notificationService.handleResponse({ message: successMessage }, "success");
 					this.router.navigate(['/maintenance']);
 				} else {
 					this.spinner.hide();
-					this._notificationService.add(new Notification('error', response.message));
+          this._notificationService.handleResponse(response, "error");
 				}
 			});
 		}

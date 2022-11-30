@@ -55,6 +55,32 @@ namespace iot.solution.model.Models
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<UserDasboardWidget> UserDasboardWidget { get; set; }
 
+        public virtual DbSet<EntityType> EntityType { get; set; }
+
+        public virtual DbSet<Medias> Medias { get; set; }
+
+        public virtual DbSet<MediaDetail> MediaDetail { get; set; }
+
+        public virtual DbSet<MediaSize> MediaSize { get; set; }
+
+        public virtual DbSet<MediaTags> MediaTags { get; set; }
+
+        public virtual DbSet<MediaTagDetail> MediaTagDetail { get; set; }
+
+        public virtual DbSet<AppSetting> AppSettings { get; set; }
+
+        public virtual DbSet<Documents> Documents { get; set; }
+
+        public virtual DbSet<DocumentShare> DocumentShare { get; set; }
+
+        public virtual DbSet<DocumentTags> DocumentTags { get; set; }
+
+        public virtual DbSet<DocumentTagDetail> DocumentTagDetail { get; set; }
+
+        public virtual DbSet<DocumentTypes> DocumentTypes { get; set; }
+
+        public virtual DbSet<DocumentVersion> DocumentVersions { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -1426,6 +1452,9 @@ namespace iot.solution.model.Models
                 entity.Property(e => e.UpdatedDate)
                     .HasColumnName("updatedDate")
                     .HasColumnType("datetime");
+                entity.Property(e => e.SubscriptionEndDate)
+                    .HasColumnName("subscriptionEndDate")
+                    .HasColumnType("datetime");
             });
 
             modelBuilder.Entity<UserDasboardWidget>(entity =>
@@ -1444,6 +1473,21 @@ namespace iot.solution.model.Models
                 entity.Property(e => e.Widgets)
                     .IsRequired()
                     .HasColumnType("text");
+            });
+
+
+            modelBuilder.Entity<AppSetting>(entity =>
+            {
+                entity.HasKey(e => e.AppSettingId)
+                    .HasName("PK__AppSetti__8CCD7996C3B379F2");
+
+                entity.Property(e => e.Key).HasMaxLength(50);
+
+                entity.Property(e => e.Value);
+
+                entity.Property(e => e.Description).HasMaxLength(500);
+
+                entity.Property(e => e.Preference);
             });
 
             OnModelCreatingPartial(modelBuilder);

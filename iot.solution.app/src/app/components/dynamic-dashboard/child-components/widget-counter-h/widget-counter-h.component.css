@@ -1,0 +1,14 @@
+.slick-carousel-mat-card .slick-slide {
+   height:160px;
+}
+
+.slick-carousel-mat-card .slick-slide img {
+   height:160px;
+}
+
+.slick-carousel-mat-card .building-list-details ul li:not(:last-of-type){
+	margin-bottom: 0px !important;
+}
+.building-small-list-box{
+	padding: 3px 16px;
+}

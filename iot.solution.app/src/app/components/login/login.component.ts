@@ -27,28 +27,20 @@ export class LoginComponent implements OnInit {
     private authService: AdminAuthGuard,
     private IdsService: IDSAuthService
   ) {
-    if (localStorage.getItem('currentUser')) {
-      let currentUser = JSON.parse(localStorage.getItem('currentUser'))
-      if (currentUser.userDetail.isAdmin) {
-        this.router.navigate(['/admin/dashboard']);
-      } else {
-        this.router.navigate(['/dashboard']);
-      }
-    } else {
-      this.spinner.show();
-      this.IdsService.isLoggedInObs()
-        .subscribe(flag => {
 
-          this.loggedIn = flag;
-          if (!flag) {
-            this.IdsService.startSigninMainWindow(this.IdsService.browserCallBackURL);
-          }
-          else {
-            this.router.navigate(['/login']);
-          }
-          this.spinner.hide();
-        });
-    }
+    this.spinner.show();
+    this.IdsService.isLoggedInObs()
+      .subscribe(flag => {
+        this.loggedIn = flag;
+        if (!flag) {
+          this.IdsService.startSigninMainWindow(this.IdsService.browserCallBackURL);
+        }
+        else {
+          this.router.navigate(['/callback']);
+        }
+        this.spinner.hide();
+      });
+
   }
 
   ngOnInit() {

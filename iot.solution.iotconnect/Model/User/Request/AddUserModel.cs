@@ -53,6 +53,9 @@ namespace IoTConnect.Model
         /// </summary>
         [Required(ErrorMessage = "EntityGuid is required")]
         public string EntityGuid { get; set; }
+
+        public bool isTempPassword { get; set; } = true;
+        public bool sendInvitationEmail { get; set; } = true;
     }
 
     public class Property

@@ -40,7 +40,7 @@ export class UserAddComponent implements OnInit {
 		private activatedRoute: ActivatedRoute,
 		private spinner: NgxSpinnerService,
 		public userService: UserService,
-		public lookupServices:LookupService,
+		public lookupServices: LookupService,
 		public locationService: LocationService,
 	) { }
 
@@ -53,7 +53,7 @@ export class UserAddComponent implements OnInit {
 				this.isEdit = true;
 				this.buttonName = 'Update';
 			} else {
-				this.userObject = { firstName: '', entityGuid: "", roleGuid: "", lastName: '', email: '', contactNo: '', timezoneGuid: '', isActive: '', isDeleted: "" };
+				this.userObject = { firstName: '', entityGuid: null, roleGuid: null, lastName: '', email: '', contactNo: '', timezoneGuid: null, isActive: '', isDeleted: "" };
 			}
 			this.createFormGroup();
 			this.getLocation();
@@ -65,7 +65,7 @@ export class UserAddComponent implements OnInit {
 	 */
 	getLocation() {
 		this.spinner.show();
-		
+
 		this.lookupServices.getLocationlookup(this.currentUser.userDetail.companyId).subscribe(response => {
 			this.spinner.hide();
 			if (response.isSuccess) {
@@ -91,14 +91,14 @@ export class UserAddComponent implements OnInit {
 		this.userForm = this.formBuilder.group({
 			firstName: ['', Validators.required],
 			lastName: ['', Validators.required],
-			email: ['', [Validators.required,Validators.pattern(/^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/)]],
+			email: ['', [Validators.required, Validators.pattern(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)]],
 			contactNo: ['', Validators.required],
-			entityGuid: ['', Validators.required],
+			entityGuid: [null, Validators.required],
 			// locationGuid: [''],
 			isActive: ['', Validators.required],
 			isDeleted: ['',],
-			roleGuid: ['', Validators.required],
-			timeZoneGuid: ['', Validators.required]
+			roleGuid: [null, Validators.required],
+			timeZoneGuid: [null, Validators.required]
 		}, {
 			validators: CustomValidators.checkPhoneValue('contactNo')
 		});
@@ -112,6 +112,7 @@ export class UserAddComponent implements OnInit {
 		this.lookupServices.getsensor
 		this.userService.getroleList().subscribe(response => {
 			this.spinner.hide();
+			response.data = response.data.filter(x => x.isAdminRole != true);
 			this.roleList = response.data;
 		});
 	}
@@ -163,9 +164,9 @@ export class UserAddComponent implements OnInit {
 				if (response.isSuccess === true) {
 					this.spinner.hide();
 					if (response.data.updatedBy != null) {
-						this._notificationService.add(new Notification('success', "User has been updated successfully."));
+						this._notificationService.add(new Notification('success', "User updated successfully."));
 					} else {
-						this._notificationService.add(new Notification('success', "User has been added successfully."));
+						this._notificationService.add(new Notification('success', "User created successfully."));
 					}
 					this.router.navigate(['/users']);
 				} else {
@@ -181,7 +182,7 @@ export class UserAddComponent implements OnInit {
 	 * @param userGuid Unique GUID of user
 	 */
 	getUserDetails(userGuid) {
-	this.spinner.show();
+		this.spinner.show();
 		this.userService.getUserDetails(userGuid).subscribe(response => {
 			if (response.isSuccess === true) {
 				this.userObject = response.data;

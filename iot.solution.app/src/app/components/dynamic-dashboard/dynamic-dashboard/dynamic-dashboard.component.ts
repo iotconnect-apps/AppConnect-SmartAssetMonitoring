@@ -183,6 +183,20 @@ export class DynamicDashboardComponent implements OnInit,OnDestroy {
 	    this.displayWidgets();
 	    this.sideBarSubscription = this.dynamicDashboardService.isToggleSidebarObs.subscribe((toggle) => {
 	    	this.changedOptions();
+	    	console.log("Sidebar clicked");
+			if(this.isPreview){
+	            this.spinner.show();
+	            this.changedOptions();
+				let cond = false;
+				Observable.interval(700)
+	            .takeWhile(() => !cond)
+	            .subscribe(i => {
+					console.log("Grid Responsive");
+					cond = true;
+					this.checkResponsiveness();
+					this.spinner.hide();
+				});
+			}
 	    })
 	}
 
@@ -192,14 +206,45 @@ export class DynamicDashboardComponent implements OnInit,OnDestroy {
 	}
 
 	checkResponsiveness(){
-		if(this.gridster.curWidth >= 640 && this.gridster.curWidth <= 1200){
+		/*if(this.gridster.curWidth >= 640 && this.gridster.curWidth <= 1200){
 			let tempWidth = parseInt((this.gridster.curWidth / 60).toString());
 			this.options.fixedColWidth = tempWidth;
 		}
 		else{
 			this.options.fixedColWidth = 20;
 		}
-		this.changedOptions();
+		this.changedOptions();*/
+		let fixedColWidth = 20;
+		if(this.gridster){
+			let tempWidth = parseFloat((((this.gridster.curWidth * fixedColWidth) / (fixedColWidth * this.gridster.columns)).toFixed(2)).toString());
+			tempWidth = (tempWidth - 0.01);
+			/*console.log("Cur width => ",this.gridster.curWidth);
+			console.log("tempWidth => ",tempWidth);
+			console.log("Total width => ",(20 * this.gridster.columns));
+			console.log("New cols => ",(tempWidth * this.gridster.columns));*/
+			if(this.gridster.curWidth >= 640 && this.isPreview){
+				//tempWidth = Math.floor((this.gridster.curWidth / 60));
+				this.options.fixedColWidth = tempWidth;
+			}
+			else{
+				this.options.fixedColWidth = fixedColWidth;
+			}
+			for (var i = 0; i <= (this.dashboardWidgets.length - 1); i++) {
+				if(this.gridster.curWidth < 640){
+					for (var g = 0; g <= (this.gridster.grid.length - 1); g++) {
+						if(this.gridster.grid[g].item.id == this.dashboardWidgets[i].id){
+							this.dashboardWidgets[i].properties.w = this.gridster.grid[g].el.clientWidth;
+						}
+					}
+				}
+				else{
+					this.dashboardWidgets[i].properties.w = (this.isPreview ? (tempWidth * this.dashboardWidgets[i].cols) : (fixedColWidth * this.dashboardWidgets[i].cols));
+				}
+				this.resizeEvent.emit(this.dashboardWidgets[i]);
+			}
+			this.changedOptions();
+			this.changeDetector.detectChanges();
+		}
 	}
 
 	displayWidgets(){
@@ -211,12 +256,13 @@ export class DynamicDashboardComponent implements OnInit,OnDestroy {
 			this.document.body.classList.add('sidebar-close');
 			this.document.body.classList.remove('sidebar-collapse');
 		}
+		this.checkResponsiveness();
 	}
 
 	deviceSizeChange(size){
 		this.deviceSize = size;
 		/*set minHeight and minWidth for all widgets*/
-		let cellW = this.gridster.curColWidth;
+		let cellW = /*this.gridster.curColWidth*/20;
 		let cellH = this.gridster.curRowHeight;
 		this.dashboardList.forEach((dashboard,Dindex) =>{
 			dashboard.widgets.forEach((widget,wIndex)=>{
@@ -285,6 +331,7 @@ export class DynamicDashboardComponent implements OnInit,OnDestroy {
 			widget.cols = widget.minItemCols;
 		});
 		/*set minHeight and minWidth for all widgets*/
+		this.checkResponsiveness();
 	}
 
 	getMasterWidget(){
@@ -346,11 +393,12 @@ export class DynamicDashboardComponent implements OnInit,OnDestroy {
 			if(!isAnyDefault){
 				this.dashboardList[systemDefaultIndex].isDefault = true;
 			}
+
 			/*Display Default Dashboard if no data*/
 			if(this.dashboardList.length > 0)
 				this.editDashboard('view','n');
 			else
-				this.editDashboard('','n');
+				this.editDashboard('edit','n');
 		}, error => {
 			this.spinner.hide();
 			this._notificationService.handleResponse(error,"error");
@@ -567,12 +615,12 @@ export class DynamicDashboardComponent implements OnInit,OnDestroy {
 			if(this.dashboardWidgets[this.editWidgetIndex].componentName == 'widget-chart-b'){
 				if(this.dashboardWidgets[this.editWidgetIndex].widgetProperty.telemetryUniqueId != ''){
 					if(this.dashboardWidgets[this.editWidgetIndex].widgetProperty.telemetryAttributes.length == 0){
-						this._notificationService.handleResponse({message:"You must select atleast one asset to save widget."},"error");
+						this._notificationService.handleResponse({message:"You must select at least one attribute to save widget."},"error");
 						isProcess = false;
 					}
 				}
 				else{
-					this._notificationService.handleResponse({message:"You must select atleast one asset to save widget."},"error");
+					this._notificationService.handleResponse({message:"You must select at least one asset to save widget."},"error");
 					isProcess = false;
 				}
 			}
@@ -592,7 +640,7 @@ export class DynamicDashboardComponent implements OnInit,OnDestroy {
 			for (var i = this.dashboardWidgets.length - 1; i >= 0; i--) {
 				if(this.dashboardWidgets[i].componentName == 'widget-chart-b'){
 					if(this.dashboardWidgets[i].widgetProperty.telemetryUniqueId == ''){
-						this._notificationService.handleResponse({message:"You must select atleast one asset for telemetry to save widget."},"error");
+						this._notificationService.handleResponse({message:"You must select at least one asset for telemetry to save widget."},"error");
 						isOk = false;
 					}
 				}
@@ -688,6 +736,7 @@ export class DynamicDashboardComponent implements OnInit,OnDestroy {
 			this.zoomChangeEvent.emit();
 
 			this.originalWidgetData = null;
+			this.changeDetector.detectChanges();
 		}
 		else{
 			this.dashboardData.id = '';

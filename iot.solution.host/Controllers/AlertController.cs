@@ -88,5 +88,31 @@ namespace iot.solution.host.Controllers
             }
             return response;
         }
+        [HttpPost]
+        [Route(AlertRoute.Route.List, Name = AlertRoute.Name.List)]
+        public Entity.BaseResponse<Entity.SearchResult<List<Entity.AlertResponse>>> PostBySearch([FromBody] Entity.AlertRequest request)
+        {
+            Entity.BaseResponse<Entity.SearchResult<List<Entity.AlertResponse>>> response = new Entity.BaseResponse<Entity.SearchResult<List<Entity.AlertResponse>>>(true);
+            try
+            {
+                //string deviceGuid = "", string parentEntityGuid = "", string entityGuid = "", int? pageNo = 1, int? pageSize = 10, string orderBy = ""
+                response.Data = _ruleService.AlertList(new Entity.AlertRequest()
+                {
+                    DeviceGuid = request.DeviceGuid,
+                    ParentEntityGuid = request.ParentEntityGuid,
+                    EntityGuid = request.EntityGuid,
+                    OrderBy = request.OrderBy,
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize
+                });
+
+            }
+            catch (Exception ex)
+            {
+                base.LogException(ex);
+                return new Entity.BaseResponse<Entity.SearchResult<List<Entity.AlertResponse>>>(false, ex.Message);
+            }
+            return response;
+        }
     }
 }

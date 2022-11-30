@@ -9,6 +9,7 @@ using System.Linq;
 using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
 using LogHandler = component.services.loghandler;
+using Microsoft.EntityFrameworkCore;
 
 namespace iot.solution.model.Repository.Implementation
 {
@@ -27,7 +28,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceMaintenanceRepository.GetUpComingList");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, "v1");
                     parameters.Add(sqlDataAccess.CreateParameter("companyguid", component.helper.SolutionConfiguration.CompanyId, DbType.Guid, ParameterDirection.Input));
@@ -62,7 +63,7 @@ namespace iot.solution.model.Repository.Implementation
                     dateValue = dateValue.AddMinutes(-double.Parse(timeZone));
                 }
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceMaintenanceRepository.GetUpComingList");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, "v1");
                     parameters.Add(sqlDataAccess.CreateParameter("guid", id, DbType.Guid, ParameterDirection.Input));
@@ -90,7 +91,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceMaintenanceRepository.GetDeviceScheduledMaintenence");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     DateTime dateValue;
                     if (DateTime.TryParse(request.currentDate.ToString(), out dateValue))
@@ -150,7 +151,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceMaintenanceRepository.Get");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, request.Version);
 
@@ -158,6 +159,10 @@ namespace iot.solution.model.Repository.Implementation
                     if (DateTime.TryParse(request.CurrentDate.ToString(), out dateValue))
                     {
                         dateValue = dateValue.AddMinutes(-double.Parse(request.TimeZone));                       
+                    }
+                    if (!request.ParentEntityGuid.Equals(Guid.Empty))
+                    {
+                        parameters.Add(sqlDataAccess.CreateParameter("parentEntityGuid", request.ParentEntityGuid, DbType.Guid, ParameterDirection.Input));
                     }
                     if (!request.EntityId.Equals(Guid.Empty))
                     {
@@ -196,7 +201,7 @@ namespace iot.solution.model.Repository.Implementation
                 int outPut = 0;
                 int intResult = 0;
                 string guidResult = string.Empty;
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("companyGuid", request.CompanyGuid, DbType.Guid, ParameterDirection.Input));
@@ -205,11 +210,11 @@ namespace iot.solution.model.Repository.Implementation
                     parameters.Add(sqlDataAccess.CreateParameter("description", request.Description, DbType.String, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("culture", component.helper.SolutionConfiguration.Culture, DbType.String, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("enableDebugInfo", component.helper.SolutionConfiguration.EnableDebugInfo, DbType.String, ParameterDirection.Input));
+                    parameters.Add(sqlDataAccess.CreateParameter("DeviceGuid", request.DeviceGuid, ParameterDirection.Input));
                     if (request.Guid == null || request.Guid == Guid.Empty)
                     {
                         parameters.Add(sqlDataAccess.CreateParameter("newid", request.Guid, DbType.Guid, ParameterDirection.Output));
                         parameters.Add(sqlDataAccess.CreateParameter("entityGuid", request.EntityGuid, ParameterDirection.Input));
-                        parameters.Add(sqlDataAccess.CreateParameter("DeviceGuid", request.DeviceGuid, ParameterDirection.Input));
                         intResult = sqlDataAccess.ExecuteNonQuery(sqlDataAccess.CreateCommand("[DeviceMaintenance_Add]", CommandType.StoredProcedure, null), parameters.ToArray());
                         guidResult = parameters.Where(p => p.ParameterName.Equals("newid")).FirstOrDefault().Value.ToString();
                     }
@@ -238,6 +243,10 @@ namespace iot.solution.model.Repository.Implementation
                         else if (msg == "DeviceMaintenanceNotFound")
                         {
                             result.Message = "Device Maintenance Not Found";
+                        }
+                        else if (msg == "DeviceMaintenanceAlreadyExists")
+                        {
+                            result.Message = "Device Maintenance already exists for selacted date range!";
                         }
                         else
                         {

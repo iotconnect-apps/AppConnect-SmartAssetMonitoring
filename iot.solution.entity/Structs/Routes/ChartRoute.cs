@@ -12,7 +12,8 @@ namespace iot.solution.entity.Structs.Routes
             public const string DeviceTypeUsage = "chart.devicetypeusage";
             public const string DeviceUsage = "chart.deviceusage";
             public const string CompanyUsage = "chart.companyusage";
-           
+            public const string ExecuteCrone = "chart.executecrone";
+
         }
 
         public struct Route
@@ -22,7 +23,8 @@ namespace iot.solution.entity.Structs.Routes
             public const string DeviceTypeUsage = "getdevicetypeusage";
             public const string DeviceUsage = "getdeviceusage";
             public const string CompanyUsage = "getcompanyusage";
-           
+            public const string ExecuteCrone = "executecron";
+
         }
     }
 }

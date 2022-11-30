@@ -3,12 +3,11 @@ using component.logger;
 using iot.solution.common;
 using iot.solution.data;
 using iot.solution.entity;
-using iot.solution.model.Models;
 using iot.solution.model.Repository.Interface;
+using iot.solution.service.AppSetting;
 using iot.solution.service.Interface;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,6 +18,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using Entity = iot.solution.entity;
 using IOT = IoTConnect.Model;
+using MediaSize = iot.solution.common.MediaSize;
 using Model = iot.solution.model.Models;
 using Response = iot.solution.entity.Response;
 
@@ -33,14 +33,22 @@ namespace iot.solution.service.Implementation
         private readonly IotConnectClient _iotConnectClient;
         private readonly ILogger _logger;
         public string ConnectionString = component.helper.SolutionConfiguration.Configuration.ConnectionString;
-        public DeviceService(IDeviceRepository deviceRepository, IEntityRepository entityRepository,ILookupService lookupService, IHardwareKitRepository hardwareKitRepository, ILogger logger)
+        private readonly IMediaService _mediaService;
+        private readonly IDocumentService _documentService;
+
+        public IConfiguration _configuration { get; set; }
+        public DeviceService(IDeviceRepository deviceRepository, IEntityRepository entityRepository, ILookupService lookupService,
+            IHardwareKitRepository hardwareKitRepository, ILogger logger, IConfiguration configuration, IMediaService mediaService, IDocumentService documentService)
         {
+            _configuration = configuration;
             _logger = logger;
             _deviceRepository = deviceRepository;
             _entityRepository = entityRepository;
             _lookupService = lookupService;
             _hardwareKitRepository = hardwareKitRepository;
-            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, SolutionConfiguration.Configuration.EnvironmentCode, SolutionConfiguration.Configuration.SolutionKey);
+            _mediaService = mediaService;
+            _documentService = documentService;
+            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EnvironmentCode.ToString()), ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SolutionKey.ToString()));
         }
 
         public List<Entity.Device> Get()
@@ -59,8 +67,10 @@ namespace iot.solution.service.Implementation
         {
             try
             {
-                  Entity.DeviceDetailModel dbDevice =_deviceRepository.Get(id);
-                
+                Entity.DeviceDetailModel dbDevice = _deviceRepository.Get(id);
+                dbDevice.DeviceImageFiles = GetDeviceImageFiles(id);
+                dbDevice.DeviceMediaFiles = GetDeviceMediaFiles(id);
+
                 return dbDevice;
             }
             catch (Exception ex)
@@ -69,13 +79,30 @@ namespace iot.solution.service.Implementation
                 return null;
             }
         }
+
+        private List<DeviceMediaFiles> GetDeviceImageFiles(Guid deviceId)
+        {
+            List<DeviceMediaFiles> deviceMediaFiles = new List<DeviceMediaFiles>();
+            int size = MediaSize.Small.GetHashCode() + MediaSize.Medium.GetHashCode() + MediaSize.Large.GetHashCode();
+            deviceMediaFiles = _mediaService.GetImageList(EntityTypeEnum.Asset.GetHashCode(), deviceId.ToString(), 1,
+                                        size, "SmartAssetMonitoringAsset", "media");
+            return deviceMediaFiles;
+        }
+
+        private List<DeviceMediaFiles> GetDeviceMediaFiles(Guid deviceId)
+        {
+            List<DeviceMediaFiles> deviceMediaFiles = new List<DeviceMediaFiles>();
+            deviceMediaFiles = _documentService.GetImageList(DocumentTypeEnum.AssetMedia.GetHashCode(), deviceId.ToString());
+            return deviceMediaFiles;
+        }
+
         public Response.DeviceDetailResponse GetDeviceDetail(Guid deviceId)
         {
             return new Response.DeviceDetailResponse()
             {
                 Temp = 2700,
                 Humidity = 73,
-                Vibration = 15                
+                Vibration = 15
             };
 
 
@@ -108,34 +135,34 @@ namespace iot.solution.service.Implementation
             {
                 var dbDevice = Mapper.Configuration.Mapper.Map<Entity.DeviceModel, Model.DeviceModel>(request);
                 if (request.Guid == null || request.Guid == Guid.Empty)
-                {          
-                            request.CompanyGuid = SolutionConfiguration.CompanyId;
+                {
+                    request.CompanyGuid = SolutionConfiguration.CompanyId;
 
-                            var addDeviceResult = _iotConnectClient.Device.Add(Mapper.Configuration.Mapper.Map<IOT.AddDeviceModel>(request)).Result;
-                            
-                            if (addDeviceResult != null && addDeviceResult.status && addDeviceResult.data != null)
-                            {
-                                request.Guid = Guid.Parse(addDeviceResult.data.newid.ToUpper());
-                                IOT.DataResponse<IOT.AcquireDeviceResult> acquireResult = _iotConnectClient.Device.AcquireDevice(request.UniqueId, new IOT.AcquireDeviceModel()).Result;
-                                //if (request.ImageFile != null)
-                                //{
-                                //    // upload image                                     
-                                //    dbDevice.Image = SaveDeviceImage(request.Guid.Value, request.ImageFile);
-                                //}
-                                dbDevice.Guid = request.Guid.Value;
-                                dbDevice.IsProvisioned = true;
-                                dbDevice.IsActive = true;
-                                dbDevice.CompanyGuid = SolutionConfiguration.CompanyId;
-                                dbDevice.CreatedDate = DateTime.Now;
-                                dbDevice.CreatedBy = SolutionConfiguration.CurrentUserId;
-                                dbDevice.TemplateGuid = request.TemplateGuid;
+                    var addDeviceResult = _iotConnectClient.Device.Add(Mapper.Configuration.Mapper.Map<IOT.AddDeviceModel>(request)).Result;
+
+                    if (addDeviceResult != null && addDeviceResult.status && addDeviceResult.data != null)
+                    {
+                        request.Guid = Guid.Parse(addDeviceResult.data.newid.ToUpper());
+                        IOT.DataResponse<IOT.AcquireDeviceResult> acquireResult = _iotConnectClient.Device.AcquireDevice(request.UniqueId, new IOT.AcquireDeviceModel()).Result;
+                        //if (request.ImageFile != null)
+                        //{
+                        //    // upload image                                     
+                        //    dbDevice.Image = SaveDeviceImage(request.Guid.Value, request.ImageFile);
+                        //}
+                        dbDevice.Guid = request.Guid.Value;
+                        dbDevice.IsProvisioned = true;
+                        dbDevice.IsActive = true;
+                        dbDevice.CompanyGuid = SolutionConfiguration.CompanyId;
+                        dbDevice.CreatedDate = DateTime.Now;
+                        dbDevice.CreatedBy = SolutionConfiguration.CurrentUserId;
+                        dbDevice.TemplateGuid = request.TemplateGuid;
                         /*
                          * <attrbs><attrb><attrGuid>12A5CD86-F6C6-455F-B27A-EFE587ED410D</attrGuid><attrName>devTemp</attrName><dispName>Temprature1</dispName></attrb>
 										<attrb><attrGuid>12A5CD86-F6C6-455F-B26A-EFE587ED410D</attrGuid><attrName>devCurrent</attrName><dispName>Current1</dispName></attrb>
 										<attrb><attrGuid>12A5CD86-F6C6-455F-B25A-EFE587ED410D</attrGuid><attrName>devVibration</attrName><dispName>Vibration1</dispName></attrb>
 								</attrbs>
                          */
-                       
+
                         var attributes = new List<attrb>();
                         var xmlData = string.Empty;
                         //request.ArrayAttrbs = JsonConvert.DeserializeObject<List<attrb>>(request.attrbs);
@@ -147,41 +174,41 @@ namespace iot.solution.service.Implementation
                         }
                         dbDevice.attrData = xmlData;
                         actionStatus = _deviceRepository.Manage(dbDevice);
-                                actionStatus.Data = actionStatus.Data != null ? (Guid)(actionStatus.Data) : Guid.Empty;
-                            if (!actionStatus.Success)
+                        actionStatus.Data = actionStatus.Data != null ? (Guid)(actionStatus.Data) : Guid.Empty;
+                        if (!actionStatus.Success)
+                        {
+                            _logger.Error($"Device is not added in solution database, Error: {actionStatus.Message}");
+                            var deleteEntityResult = _iotConnectClient.Device.Delete(request.Guid.Value.ToString()).Result;
+                            if (deleteEntityResult != null && deleteEntityResult.status)
                             {
-                                _logger.Error($"Device is not added in solution database, Error: {actionStatus.Message}");
-                                var deleteEntityResult = _iotConnectClient.Device.Delete(request.Guid.Value.ToString()).Result;
-                                if (deleteEntityResult != null && deleteEntityResult.status)
-                                {
-                                    _logger.Error($"Device is not deleted from iotconnect");
+                                _logger.Error($"Device is not deleted from iotconnect");
 
-                                    actionStatus.Success = false;
-                                    actionStatus.Message = actionStatus.Message;
-                                }
-                            }
-                            else
-                            {
-
-                                //upload multiple images
-                                if (request.ImageFiles != null && request.ImageFiles.Count > 0)
-                                {
-                                    UploadFiles(request.ImageFiles, dbDevice.Guid.ToString(), "I");
-                                }
-                                //upload media files
-                                if (request.MediaFiles != null && request.MediaFiles.Count > 0)
-                                {
-                                    UploadFiles(request.MediaFiles, dbDevice.Guid.ToString(), "M");
-                                }
-                            }
-                            }
-                            else
-                            {
-
-                                actionStatus.Data = Guid.Empty;
                                 actionStatus.Success = false;
-                                actionStatus.Message = new UtilityHelper().IOTResultMessage(addDeviceResult.errorMessages);
+                                actionStatus.Message = actionStatus.Message;
                             }
+                        }
+                        else
+                        {
+
+                            //upload multiple images
+                            if (request.ImageFiles != null && request.ImageFiles.Count > 0)
+                            {
+                                actionStatus = UploadFiles(request.ImageFiles, dbDevice.Guid.ToString(), "I");
+                            }
+                            //upload media files
+                            if (request.MediaFiles != null && request.MediaFiles.Count > 0)
+                            {
+                                actionStatus = UploadFiles(request.MediaFiles, dbDevice.Guid.ToString(), "M");
+                            }
+                        }
+                    }
+                    else
+                    {
+
+                        actionStatus.Data = Guid.Empty;
+                        actionStatus.Success = false;
+                        actionStatus.Message = new UtilityHelper().IOTResultMessage(addDeviceResult.errorMessages);
+                    }
                 }
                 else
                 {
@@ -244,16 +271,17 @@ namespace iot.solution.service.Implementation
                             actionStatus.Message = "Something Went Wrong!";
                             actionStatus.Data = Guid.Empty;
                         }
-                        else {
+                        else
+                        {
                             //upload multiple images
                             if (request.ImageFiles != null && request.ImageFiles.Count > 0)
                             {
-                                UploadFiles(request.ImageFiles, dbDevice.Guid.ToString(), "I");
+                                actionStatus = UploadFiles(request.ImageFiles, dbDevice.Guid.ToString(), "I");
                             }
                             //upload media files
                             if (request.MediaFiles != null && request.MediaFiles.Count > 0)
                             {
-                                UploadFiles(request.MediaFiles, dbDevice.Guid.ToString(), "M");
+                                actionStatus = UploadFiles(request.MediaFiles, dbDevice.Guid.ToString(), "M");
                             }
                         }
 
@@ -308,33 +336,44 @@ namespace iot.solution.service.Implementation
                 {
                     List<file> lstFileUploaded = new List<file>();
                     System.Text.StringBuilder strFileNotUploaded = new System.Text.StringBuilder();
+
+                    bool isAnyDocumentHasError = false;
+
                     foreach (var formFile in files)
                     {
-                        file obj = new file();
+                        string documemntId = string.Empty;
 
-                        string filePath = SaveDeviceFiles(Guid.NewGuid(), formFile);
-                        if (!string.IsNullOrEmpty(filePath))
+                        if (type != "I")
                         {
-                            obj.path = filePath.ToString();
-                            obj.type = type;
-                            obj.desc = Path.GetFileNameWithoutExtension(formFile.FileName);
-                            lstFileUploaded.Add(obj);
+                            documemntId = _documentService.AddDocument(Guid.Parse(deviceId), formFile, "SmartAssetMonitoringAsset", DocumentTypeEnum.AssetMedia.GetHashCode());
+
+                            if (documemntId == string.Empty)
+                                isAnyDocumentHasError = true;
+
+                            if (isAnyDocumentHasError)
+                            {
+                                actionStatus.Success = false;
+                                actionStatus.Message = strFileNotUploaded.ToString();
+                            }
                         }
                         else
                         {
-                            strFileNotUploaded.Append(formFile.FileName + " is invalid! ");
+                            int size = MediaSize.Default.GetHashCode() + MediaSize.Small.GetHashCode();
+                            var response = _mediaService.AddImage(Guid.Parse(deviceId), formFile, "SmartAssetMonitoringAsset", EntityTypeEnum.Asset.GetHashCode(),
+                            1, size, "media");
+
+                            if (!response.isSuccess)
+                            {
+                                actionStatus.Success = false;
+                                actionStatus.Message = response.response;
+                            }
                         }
                     }
-                    if (lstFileUploaded.Count > 0)
+
+                    if (actionStatus.Success)
                     {
-                        var xmlfiles = ObjectToXMLGeneric<List<file>>(lstFileUploaded);
-                        xmlfiles = xmlfiles.Replace("ArrayOfFile", "files");
-                        actionStatus = _deviceRepository.UploadFiles(xmlfiles, deviceId);
-                    }
-                    else
-                    {
-                        actionStatus.Success = false;
-                        actionStatus.Message = strFileNotUploaded.ToString();
+                        actionStatus.Success = true;
+                        actionStatus.Message = "Files Uploaded Successfully!!";
                     }
                 }
                 else
@@ -352,6 +391,9 @@ namespace iot.solution.service.Implementation
                     Message = ex.Message
                 };
             }
+
+            if (actionStatus.Data == null)
+                actionStatus.Data = Guid.Empty;
             return actionStatus;
         }
         private string SaveDeviceFiles(Guid guid, IFormFile image)
@@ -404,6 +446,9 @@ namespace iot.solution.service.Implementation
                     dbDevice.IsDeleted = true;
                     dbDevice.UpdatedDate = DateTime.Now;
                     dbDevice.UpdatedBy = SolutionConfiguration.CurrentUserId;
+
+                    bool isMediaDeleted = DeleteDeviceBlobFiles(id);
+
                     return _deviceRepository.Update(dbDevice);
                 }
                 else
@@ -467,9 +512,8 @@ namespace iot.solution.service.Implementation
         //    }
         //    return actionStatus;
         //}
-        public Entity.ActionStatus DeleteMediaFile(Guid deviceId, Guid? fileId)
+        public Entity.ActionStatus DeleteMediaFile(Guid deviceId, bool isImage, Guid? fileId)
         {
-
             Entity.ActionStatus actionStatus = new Entity.ActionStatus(true);
             try
             {
@@ -478,7 +522,19 @@ namespace iot.solution.service.Implementation
                 {
                     throw new NotFoundCustomException($"{CommonException.Name.NoRecordsFound} : MediaFile");
                 }
-                return _deviceRepository.DeleteMediaFiles(deviceId, fileId);
+
+                if (isImage)
+                {
+                    actionStatus.Success = _mediaService.DeleteImageByMediaId(fileId.ToString(), deviceId.ToString(), EntityTypeEnum.Asset.GetHashCode(),
+                                   1, "SmartAssetMonitoringAsset");
+                }
+                else
+                {
+
+                    actionStatus.Success = _documentService.DeleteDocument(DocumentTypeEnum.AssetMedia.GetHashCode(), deviceId.ToString(), fileId ?? Guid.Empty);
+
+                }
+
             }
             catch (Exception ex)
             {
@@ -486,6 +542,7 @@ namespace iot.solution.service.Implementation
                 actionStatus.Success = false;
                 actionStatus.Message = ex.Message;
             }
+
             return actionStatus;
         }
         public Entity.ActionStatus UpdateStatus(Guid id, bool status)
@@ -571,7 +628,7 @@ namespace iot.solution.service.Implementation
             }
         }
 
-    
+
         public Entity.BaseResponse<int> ValidateKit(string kitCode)
         {
             Entity.BaseResponse<int> result = new Entity.BaseResponse<int>(true);
@@ -718,15 +775,15 @@ namespace iot.solution.service.Implementation
                 if (deviceCounterResult != null && deviceCounterResult.status)
                 {
                     result.Data = Mapper.Configuration.Mapper.Map<Entity.DeviceCounterByEntityResult>(deviceCounterResult.data.FirstOrDefault());
-                    var device = _iotConnectClient.Device.AllDevice(new IoTConnect.Model.AllDeviceModel { entityGuid=entityGuid.ToString(), companyGuid = SolutionConfiguration.CompanyId.ToString() }).Result;
+                    var device = _iotConnectClient.Device.AllDevice(new IoTConnect.Model.AllDeviceModel { entityGuid = entityGuid.ToString(), companyGuid = SolutionConfiguration.CompanyId.ToString() }).Result;
                     if (device != null && device.Data != null && device.Data.Any())
                     {
-                       
-                        var resultIoT = (from r in device.Data 
+
+                        var resultIoT = (from r in device.Data
                                          join l in _deviceRepository.GetAll().Where(t => t.CompanyGuid.Equals(SolutionConfiguration.CompanyId) && !t.IsDeleted).ToList()
-                   on r.Guid.ToUpper() equals l.Guid.ToString().ToUpper() 
-                   join e in _entityRepository.GetAll().Where(t=>t.CompanyGuid.Equals(SolutionConfiguration.CompanyId) && !t.IsDeleted && t.ParentEntityGuid.HasValue && t.ParentEntityGuid.Value == entityGuid).ToList() 
-                   on l.EntityGuid.ToString().ToUpper() equals e.Guid.ToString().ToUpper() 
+                   on r.Guid.ToUpper() equals l.Guid.ToString().ToUpper()
+                                         join e in _entityRepository.GetAll().Where(t => t.CompanyGuid.Equals(SolutionConfiguration.CompanyId) && !t.IsDeleted && t.ParentEntityGuid.HasValue && t.ParentEntityGuid.Value == entityGuid).ToList()
+                                         on l.EntityGuid.ToString().ToUpper() equals e.Guid.ToString().ToUpper()
                                          select new
                                          {
                                              r.IsActive,
@@ -782,13 +839,14 @@ namespace iot.solution.service.Implementation
                                            notificationCount = r.notificationCount
                                        }).ToList();
                     }
-                    else {
-                        result.Data = (from r in result.Data                                       
+                    else
+                    {
+                        result.Data = (from r in result.Data
                                        select new DeviceTelemetryDataResult
                                        {
                                            aggregateType = r.aggregateType,
                                            aggregateTypeValues = r.aggregateTypeValues,
-                                           attributeDisplayName =  r.attributeName,
+                                           attributeDisplayName = r.attributeName,
                                            attributeName = r.attributeName,
                                            attributeValue = r.attributeValue,
                                            deviceUpdatedDate = r.deviceUpdatedDate,
@@ -835,6 +893,38 @@ namespace iot.solution.service.Implementation
                 return new Entity.BaseResponse<Entity.DeviceConnectionStatusResult>(false, ex.Message);
             }
             return result;
+        }
+
+        private bool DeleteDeviceBlobFiles(Guid deviceId)
+        {
+            #region delete media images
+
+            bool isDeleted = false;
+
+            List<DeviceMediaFiles> deviceMediaImages = new List<DeviceMediaFiles>();
+            int size = MediaSize.Small.GetHashCode() + MediaSize.Medium.GetHashCode() + MediaSize.Large.GetHashCode();
+            deviceMediaImages = _mediaService.GetImageList(EntityTypeEnum.Asset.GetHashCode(), deviceId.ToString(), 1,
+                                        size, "SmartAssetMonitoringAsset", "media");
+
+            if (deviceMediaImages.Count > 0)
+            {
+                isDeleted = _mediaService.DeleteImage(null, deviceId.ToString(), EntityTypeEnum.Asset.GetHashCode(), 1, null, "SmartAssetMonitoringAsset");
+            }
+            #endregion
+
+
+            #region delete media files
+            List<DeviceMediaFiles> deviceMediaFiles = new List<DeviceMediaFiles>();
+            deviceMediaFiles = _documentService.GetImageList(DocumentTypeEnum.AssetMedia.GetHashCode(), deviceId.ToString());
+
+            if (deviceMediaFiles.Count > 0)
+            {
+                isDeleted = _documentService.DeleteDocument(DocumentTypeEnum.AssetMedia.GetHashCode(), deviceId.ToString(), null);
+            }
+
+            #endregion  
+
+            return isDeleted;
         }
 
     }

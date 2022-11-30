@@ -59,7 +59,7 @@ namespace host.iot.solution.Controllers
         [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.OK)]
         [HttpPost]
         [Route(DeviceRoute.Route.Manage, Name = DeviceRoute.Name.Add)]
-        public Entity.BaseResponse<Guid> Manage([FromForm]Entity.DeviceModel request)
+        public Entity.BaseResponse<Guid> Manage([FromForm] Entity.DeviceModel request)
         {
             Entity.BaseResponse<Guid> response = new Entity.BaseResponse<Guid>(true);
             try
@@ -101,12 +101,12 @@ namespace host.iot.solution.Controllers
         [HttpPut]
         [Route(DeviceRoute.Route.DeleteMediaFile, Name = DeviceRoute.Name.DeleteMediaFile)]
         [EnsureGuidParameterAttribute("deviceId", "Asset")]
-        public Entity.BaseResponse<bool> DeleteMediaFile(string deviceId, Guid? fileId)
+        public Entity.BaseResponse<bool> DeleteMediaFile(string isImage, string deviceId, Guid? fileId)
         {
             Entity.BaseResponse<bool> response = new Entity.BaseResponse<bool>(true);
             try
             {
-                var status = _service.DeleteMediaFile(Guid.Parse(deviceId), fileId);
+                var status = _service.DeleteMediaFile(Guid.Parse(deviceId), Convert.ToBoolean(isImage), fileId);
                 response.IsSuccess = status.Success;
                 response.Message = status.Message;
                 response.Data = status.Success;
@@ -141,7 +141,7 @@ namespace host.iot.solution.Controllers
 
         [HttpPost]
         [Route(DeviceRoute.Route.BySearch, Name = DeviceRoute.Name.BySearch)]
-        public Entity.BaseResponse<Entity.SearchResult<List<Entity.DeviceListItem>>> GetByPostSearch([FromBody]Entity.MobileSearchRequest request)//string parentEntityGuid = "", string entityGuid = "", string searchText = "", int? pageNo = 1, int? pageSize = 10, string orderBy = "")
+        public Entity.BaseResponse<Entity.SearchResult<List<Entity.DeviceListItem>>> GetByPostSearch([FromBody] Entity.MobileSearchRequest request)//string parentEntityGuid = "", string entityGuid = "", string searchText = "", int? pageNo = 1, int? pageSize = 10, string orderBy = "")
         {
             Entity.BaseResponse<Entity.SearchResult<List<Entity.DeviceListItem>>> response = new Entity.BaseResponse<Entity.SearchResult<List<Entity.DeviceListItem>>>(true);
             try
@@ -150,10 +150,10 @@ namespace host.iot.solution.Controllers
                 {
                     ParentEntityGuid = !string.IsNullOrEmpty(request.parentEntityGuid) ? Guid.Parse(request.parentEntityGuid) : Guid.Empty,
                     EntityId = !string.IsNullOrEmpty(request.entityGuid) ? Guid.Parse(request.entityGuid) : Guid.Empty,
-                    SearchText = !string.IsNullOrEmpty(request.SearchText)?request.SearchText:"",
-                    PageNumber = request.PageNo.HasValue ? request.PageNo.Value:-1,
-                    PageSize = request.PageSize.HasValue?request.PageSize.Value:-1,
-                    OrderBy = !string.IsNullOrEmpty(request.OrderBy)?request.OrderBy:""
+                    SearchText = !string.IsNullOrEmpty(request.SearchText) ? request.SearchText : "",
+                    PageNumber = request.PageNo.HasValue ? request.PageNo.Value : -1,
+                    PageSize = request.PageSize.HasValue ? request.PageSize.Value : -1,
+                    OrderBy = !string.IsNullOrEmpty(request.OrderBy) ? request.OrderBy : ""
                 });
                 foreach (var data in response.Data.Items)
                 {
@@ -222,7 +222,7 @@ namespace host.iot.solution.Controllers
                 return new Entity.BaseResponse<Entity.DeviceCounterResult>(false, ex.Message);
             }
         }
-       
+
 
         [HttpGet]
         [Route(DeviceRoute.Route.TelemetryData, Name = DeviceRoute.Name.TelemetryData)]

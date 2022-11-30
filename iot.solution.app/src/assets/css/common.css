@@ -3822,3 +3822,10 @@ app-sitelayout > .mat-drawer-container .mat-drawer-content {
   border:groove;
   height: 25px;
 }
+.mat-input-element[readonly]:focus{
+	background-color: #e9ecef !important;	
+}
+.mat-input-element[readonly]{
+	color: #495057;
+	border-radius: 0;
+}

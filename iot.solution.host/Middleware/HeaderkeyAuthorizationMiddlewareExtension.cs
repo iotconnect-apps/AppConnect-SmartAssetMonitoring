@@ -39,10 +39,13 @@ namespace host.iot.solution.Middleware
                      || context.Request.Path.Value.Contains("/api/account/refreshtoken")
                      || context.Request.Path.Value.Contains("/api/subscriber")
                      || context.Request.Path.Value.Contains("/api/account/login")
-                       || context.Request.Path.Value.Contains("/api/account/identity")
+                     || context.Request.Path.Value.Contains("/api/account/identity")
                      || context.Request.Path.Value.StartsWith("/wwwroot/")
+                     || context.Request.Path.Value.Contains("/api/chart/executecron")
                      || context.Request.Path.Value.Contains("/api/alert/addiotalert")
-                     || context.Request.Path.Value.Contains("/api/account/adminlogin")) // Nikunj
+                     || context.Request.Path.Value.Contains("/api/account/adminlogin")
+                     || context.Request.Path.Value.Contains("/api/notification/")
+                     || context.Request.Path.Value.Contains("/notificationhub")) // Nikunj
                 {
                     await _next.Invoke(context);
                     return;
@@ -92,9 +95,10 @@ namespace host.iot.solution.Middleware
                             SolutionConfiguration.EntityGuid = Guid.Parse(responsedata.data.entityGuid);
                             SolutionConfiguration.CompanyId = Guid.Parse(responsedata.data.companyGuid);
                         }
-                        else {
+                        else
+                        {
                             context.Response.StatusCode = 401;
-                            await context.Response.WriteAsync(loginResponse.Message);                            
+                            await context.Response.WriteAsync(loginResponse.Message);
                         }
                     }
                     //SolutionConfiguration.BearerToken = context.User.Claims.Where(c => c.Type == "IOT_CONNECT").FirstOrDefault().Value;

@@ -1,0 +1,17 @@
+{
+  "env": {
+      "name": "uat"
+  },
+  "apiServer": {
+    "baseUrl": "http://localhost:59097/",
+    "googleMapApiKey" : "AIzaSyBPSWh9gHDKCZ5iicTWZs2keC7WN3Kt1bk",
+    "SignalRDataUrl": "https://qa-smartassetmonitoring-api-core-wi.azurewebsites.net/"
+  },
+  "IdsServer": {
+    "IDSAuthority": "https://login.iotconnect.io",
+    "IDSClientID": "iotconnect.qa",
+    "IDSScope": "openid profile iotconnect.api.fullaccess",
+    "IDSArcValue": "solutionCode:b8d79d88-38c8-4ecc-9edc-78d478d38b6d",
+    "webUrl": "http://localhost:4200"
+  }
+}

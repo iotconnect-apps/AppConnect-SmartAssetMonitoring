@@ -1,8 +1,12 @@
 ﻿using component.helper;
 using component.helper.Interface;
 using component.logger;
+using iot.solution.common;
+using iot.solution.entity;
 using iot.solution.model.Repository.Interface;
+using iot.solution.service.AppSetting;
 using iot.solution.service.Interface;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,14 +26,21 @@ namespace iot.solution.service.Implementation
         private readonly IHardwareKitRepository _hardwareKitRepository;
         private readonly ICompanyRepository _companyRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IEmailHelper _emailHelper;
 
-        public SubscriberService(LogHandler.Logger logger, IHardwareKitRepository hardwareKitRepository, IKitTypeRepository kitTypeRepository, ICompanyRepository companyRepository,IUserRepository userRepository)
+      
+
+        public SubscriberService(LogHandler.Logger logger, IHardwareKitRepository hardwareKitRepository, IKitTypeRepository kitTypeRepository, ICompanyRepository companyRepository,IUserRepository userRepository, IEmailHelper emailHelper)
         {
             _logger = logger;
-            _subscriberHelper = new SubscriberHelper(logger);
+            _subscriberHelper = new SubscriberHelper(logger, ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionBaseUrl.ToString()),
+                ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionClientID.ToString()),
+                ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionClientSecret.ToString()),
+                ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionUserName.ToString()), ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionSolutionId.ToString()));
             _hardwareKitRepository = hardwareKitRepository;
             _companyRepository = companyRepository;
             _userRepository = userRepository;
+            _emailHelper = emailHelper;
         }
         public Response.CountryResponse GetCountryLookUp()
         {
@@ -109,10 +120,13 @@ namespace iot.solution.service.Implementation
             {
                 requestData.User.PhoneCountryCode = requestData.User.PhoneCountryCode.Replace("+", "");
                 Entity.SaveCompanyResponse saveResult = _subscriberHelper.CreateCompany(requestData);
+                
                 if (saveResult != null && saveResult.PaymentTransactionId != null)
                 {
                     response.Data = saveResult;
-                   
+
+                    Entity.SubsciberCompanyDetails subscriptionDetail = GetSubscriberDetails(requestData.SolutionCode, saveResult.ConsumerId);
+
                     Model.Company dbCompany = new Model.Company()
                     {
                         Guid = Guid.Parse(saveResult.IoTConnectCompanyGuid),
@@ -144,9 +158,32 @@ namespace iot.solution.service.Implementation
                         dbUser.FirstName = objUser.FirstName;
                         dbUser.LastName = objUser.LastName;
                         dbUser.TimeZoneGuid = objUser.TimeZoneGuid;
+                        dbUser.SubscriptionEndDate = Convert.ToDateTime(subscriptionDetail.renewalDate);
                         _userRepository.Update(dbUser);
                     }
+                    string userName = objUser.FirstName + " " + objUser.LastName;
 
+                    
+
+                    _emailHelper.SendCompanyRegistrationEmail(userName, requestData.User.CompanyName, requestData.User.Email, requestData.User.Password,
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpFromDisplayName.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpFromMail.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpPassword.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpRegards.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EmailTemplateCompanyRegistrationSubject.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EmailTemplateCompanyUserList.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.PortalUrl.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EmailTemplateMailSolutionName.ToString()));
+
+                    _emailHelper.SendCompanyRegistrationAdminEmail(userName, requestData.User.CompanyName, requestData.User.Email,
+                        requestData.User.Address + " , " + requestData.User.CityName, requestData.User.PhoneCountryCode + "-" + requestData.User.Phone,
+                         ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpFromDisplayName.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpFromMail.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpPassword.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpRegards.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EmailTemplateCompanyRegistrationSubject.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EmailTemplateCompanyAdminUserList.ToString()),
+                        ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.PortalUrl.ToString()));
                     response.Success = true;
                     response.Message = "";
                 }
@@ -198,12 +235,12 @@ namespace iot.solution.service.Implementation
                 return new Entity.SearchResult<List<Entity.SubscriberData>>();
             }
         }
-        public Entity.SubsciberCompanyDetails GetSubscriberDetails(string solutionCode, string userEmail)
+        public Entity.SubsciberCompanyDetails GetSubscriberDetails(string solutionCode, Guid consumerId)
         {
             Entity.SubsciberCompanyDetails result = new Entity.SubsciberCompanyDetails();
             try
             {
-                result = _subscriberHelper.GetSubscriberDetails(solutionCode, userEmail);
+                result = _subscriberHelper.GetSubscriberDetails(solutionCode, consumerId);
             }
             catch (Exception ex)
             {

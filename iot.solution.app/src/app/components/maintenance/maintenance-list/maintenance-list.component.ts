@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { LookupService, NotificationService, Notification, DeviceService } from 'app/services';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import * as moment from 'moment-timezone';
-import { DeleteAlertDataModel, AppConstant } from 'app/app.constants';
 import { DeleteDialogComponent } from '../..';
 import { MatDialog } from '@angular/material';
+import { DeviceService, LookupService, Notification, NotificationService } from '../../../services';
+import { AppConstant, DeleteAlertDataModel } from '../../../app.constants';
 @Component({
   selector: 'app-maintenance-list',
   templateUrl: './maintenance-list.component.html',
@@ -23,8 +23,9 @@ export class MaintenanceListComponent implements OnInit {
   filterForm: FormGroup;
   totalRecords = 0;
   searchParameters = {
+    parentEntityGuid: '',
     entityGuid: '',
-    zoneGuid: '',
+    deviceId: '',
     pageNumber: 0,
     pageSize: 10,
     searchText: '',
@@ -39,7 +40,7 @@ export class MaintenanceListComponent implements OnInit {
     private formBuilder: FormBuilder,
     private _service: DeviceService,
     public _appConstant: AppConstant,
-    private spinner: NgxSpinnerService, ) { }
+    private spinner: NgxSpinnerService,) { }
 
   ngOnInit() {
     this.createFilterFormGroup();
@@ -52,9 +53,9 @@ export class MaintenanceListComponent implements OnInit {
    * 
    * called on location change
    */
-  onLocationChange(event){
-  this.filterForm.get('zoneGuid').setValue(''); 
-    this.checkFilterSubmitStatus=false;
+  onLocationChange(event) {
+    this.filterForm.get('zoneGuid').setValue('');
+    this.checkFilterSubmitStatus = false;
     this.getZonesLookup(event);
   }
 
@@ -116,15 +117,15 @@ export class MaintenanceListComponent implements OnInit {
    */
   createFilterFormGroup() {
     this.filterForm = this.formBuilder.group({
-      entityGuid: ['',Validators.required],
-      zoneGuid: ['',Validators.required]
+      entityGuid: [''],
+      zoneGuid: ['']
     });
   }
 
-/**
-* Get Location Lookup by companyId
-* @param companyId
-*/
+  /**
+  * Get Location Lookup by companyId
+  * @param companyId
+  */
   getLocationLookup(companyId) {
     this.lookupService.getLocationlookup(companyId).
       subscribe(response => {
@@ -148,8 +149,9 @@ export class MaintenanceListComponent implements OnInit {
   filterCall() {
     this.checkFilterSubmitStatus = true;
     if (this.filterForm.valid) {
-      this.searchParameters.entityGuid = this.filterForm.value.entityGuid;
-      this.searchParameters.zoneGuid = this.filterForm.value.zoneGuid;
+      this.searchParameters.pageNumber = 0;
+      this.searchParameters.parentEntityGuid = this.filterForm.value.entityGuid;
+      this.searchParameters.entityGuid = this.filterForm.value.zoneGuid;
       this.getMaintenance();
     }
   }
@@ -177,7 +179,8 @@ export class MaintenanceListComponent implements OnInit {
     this.isFilterShow = false;
     this.checkFilterSubmitStatus = false;
     this.searchParameters.entityGuid = '';
-    this.searchParameters.zoneGuid = '';
+    this.searchParameters.parentEntityGuid = '';
+    this.zones = [];
     this.getMaintenance();
   }
 

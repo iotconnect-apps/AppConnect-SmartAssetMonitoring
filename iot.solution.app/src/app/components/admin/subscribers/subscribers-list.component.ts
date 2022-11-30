@@ -4,37 +4,39 @@ import { NgxSpinnerService } from 'ngx-spinner'
 import { MatDialog, MatTableDataSource, MatSort, MatPaginator } from '@angular/material'
 import { DeleteDialogComponent } from '../../common/delete-dialog/delete-dialog.component';
 import { DeviceService, NotificationService } from 'app/services';
-import{Notification} from 'app/services/notification/notification.service';
+import { Notification } from 'app/services/notification/notification.service';
 import { AppConstant, DeleteAlertDataModel } from "../../../app.constants";
+import { CommonService } from 'app/services/common/common.service';
 
 @Component({ selector: 'app-subscribers-list', templateUrl: './subscribers-list.component.html', styleUrls: ['./subscribers-list.component.scss'] })
 
 export class SubscribersListComponent implements OnInit {
-	changeStatusDeviceName:any;
-	changeStatusDeviceStatus:any;
+	changeStatusDeviceName: any;
+	changeStatusDeviceStatus: any;
 	order = true;
 	isSearch = false;
 	pageSizeOptions: number[] = [5, 10, 25, 100];
 	reverse = false;
 	orderBy = 'companyName';
-	totalRecords=0;
+	totalRecords = 0;
 	searchParameters = {
-		pageNo:0,
+		pageNo: 0,
 		pageSize: 10,
 		searchText: '',
 		sortBy: 'companyName asc'
 	};
-	displayedColumns: string[] = [ 'subscriberName','companyName', 'email','subscriptionStartDate','subscriptionEndDate','planName'];
-	dataSource=[];
-	deleteAlertDataModel : DeleteAlertDataModel ; 
-	
+	displayedColumns: string[] = ['subscriberName', 'companyName', 'email', 'subscriptionStartDate', 'subscriptionEndDate', 'planName'];
+	dataSource = [];
+	deleteAlertDataModel: DeleteAlertDataModel;
+
 	constructor(
 		private spinner: NgxSpinnerService,
 		private router: Router,
 		public dialog: MatDialog,
-		private deviceService:DeviceService,
+		private deviceService: DeviceService,
 		private _notificationService: NotificationService,
-		public _appConstant : AppConstant
+		public _appConstant: AppConstant,
+		private _commonService: CommonService
 	) { }
 
 	ngOnInit() {
@@ -48,17 +50,17 @@ export class SubscribersListComponent implements OnInit {
 	setOrder(sort: any) {
 		if (!sort.active || sort.direction === '') {
 			return;
-	   }
-	  	this.searchParameters.sortBy = sort.active + ' ' + sort.direction;
+		}
+		this.searchParameters.sortBy = sort.active + ' ' + sort.direction;
 		this.getSubscribersList();
 	}
 
 	deleteModel(DeviceModel: any) {
 		this.deleteAlertDataModel = {
-			title: "Delete Device" ,
-			message: this._appConstant.msgConfirm.replace('modulename', "device"), 
+			title: "Delete Device",
+			message: this._appConstant.msgConfirm.replace('modulename', "device"),
 			okButtonName: "Yes",
-			cancelButtonName: "No" ,
+			cancelButtonName: "No",
 		};
 		const dialogRef = this.dialog.open(DeleteDialogComponent, {
 			width: '400px',
@@ -73,29 +75,29 @@ export class SubscribersListComponent implements OnInit {
 		});
 	}
 
-  onPageSizeChangeCallback(pageSize) {
-    this.searchParameters.pageSize = pageSize;
-    this.searchParameters.pageNo = 1;
-    this.isSearch = true;
-    this.getSubscribersList();
-  }
+	onPageSizeChangeCallback(pageSize) {
+		this.searchParameters.pageSize = pageSize;
+		this.searchParameters.pageNo = 1;
+		this.isSearch = true;
+		this.getSubscribersList();
+	}
 
 	ChangePaginationAsPageChange(pagechangeresponse) {
-	this.searchParameters.pageNo = pagechangeresponse.pageIndex;
-	this.searchParameters.pageSize = pagechangeresponse.pageSize;
-	this.isSearch = true;
-    this.getSubscribersList();
+		this.searchParameters.pageNo = pagechangeresponse.pageIndex;
+		this.searchParameters.pageSize = pagechangeresponse.pageSize;
+		this.isSearch = true;
+		this.getSubscribersList();
 	}
 
 	searchTextCallback(filterText) {
-		this.searchParameters.searchText = filterText;
+		this.searchParameters.searchText = this._commonService.getEncodedValue(filterText);
 		this.searchParameters.pageNo = 0;
 		this.getSubscribersList();
 		this.isSearch = true;
 	}
 
 
-	
+
 	getSubscribersList() {
 		this.spinner.show();
 		this.deviceService.getsubscribers(this.searchParameters).subscribe(response => {
@@ -110,24 +112,24 @@ export class SubscribersListComponent implements OnInit {
 			}
 		}, error => {
 			this.spinner.hide();
-			this._notificationService.add(new Notification('error', error ));
+			this._notificationService.add(new Notification('error', error));
 		});
 	}
-	
-	activeInactiveDevice(deviceId: string, isActive: boolean, name:string) {
+
+	activeInactiveDevice(deviceId: string, isActive: boolean, name: string) {
 		var status = isActive == false ? this._appConstant.activeStatus : this._appConstant.inactiveStatus;
 		var mapObj = {
-			statusname:status,
-			fieldname:name,
-			modulename:"device"
-		 };
+			statusname: status,
+			fieldname: name,
+			modulename: "device"
+		};
 		this.deleteAlertDataModel = {
 			title: "Status",
-			message: this._appConstant.msgStatusConfirm.replace(/statusname|fieldname|modulename/gi, function(matched){
+			message: this._appConstant.msgStatusConfirm.replace(/statusname|fieldname|modulename/gi, function (matched) {
 				return mapObj[matched];
-			  }),
+			}),
 			okButtonName: "Yes",
-			cancelButtonName: "No" ,
+			cancelButtonName: "No",
 		};
 		const dialogRef = this.dialog.open(DeleteDialogComponent, {
 			width: '400px',
@@ -141,7 +143,7 @@ export class SubscribersListComponent implements OnInit {
 
 			}
 		});
-	
+
 	}
 
 	changeDeviceStatus(deviceId, isActive) {
@@ -156,7 +158,7 @@ export class SubscribersListComponent implements OnInit {
 			else {
 				this._notificationService.add(new Notification('error', response.message));
 			}
-			
+
 		}, error => {
 			this.spinner.hide();
 			this._notificationService.add(new Notification('error', error));

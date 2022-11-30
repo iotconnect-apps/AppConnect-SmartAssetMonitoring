@@ -11,6 +11,9 @@ import { Message } from '@stomp/stompjs'
 import { AppConstant } from "../../app.constants";
 import * as moment from 'moment'
 import { IDSAuthService } from "app/services/auth/idsauth.service";
+/*Dynamic Dashboard Code*/
+import { DynamicDashboardService } from 'app/services/dynamic-dashboard/dynamic-dashboard.service';
+/*Dynamic Dashboard Code*/
 
 @Component({
   selector: 'app-header',
@@ -46,6 +49,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   unReadAlerts = 0;
   respondShow: boolean = false;
   @ViewChild('showDropdown', { static: false }) private elementRef: ElementRef;
+  /*Dynamic Dashboard Code*/
+  sidebarValue : boolean = true;
+  /*Dynamic Dashboard Code*/
 
   constructor(
     private IdsService: IDSAuthService,
@@ -54,7 +60,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private stompService: StompRService,
     private deviceService: DeviceService,
-    public _appConstant: AppConstant
+    public _appConstant: AppConstant,
+    public dynamicDashboardService: DynamicDashboardService,
   ) {
 
     router.events.subscribe((val) => {
@@ -140,7 +147,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     let config = this.stompConfiguration;
     this.stompService.config = config;
     this.stompService.initAndConnect();
-    this.stompSubscribe();
+    //this.stompSubscribe();
   }
 
   public stompSubscribe() {
@@ -184,4 +191,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     }
   }
+
+  /*Dynamic Dashboard Code*/
+    sidebarToggle(){
+      if(this.router.url == '/dynamic-dashboard' || this.router.url == '/dashboard'){
+        console.log("Clicked");
+            this.sidebarValue = !this.sidebarValue;
+        this.dynamicDashboardService.isToggleSidebar.next(this.sidebarValue);
+      }
+    }
+    /*Dynamic Dashboard Code*/
 }

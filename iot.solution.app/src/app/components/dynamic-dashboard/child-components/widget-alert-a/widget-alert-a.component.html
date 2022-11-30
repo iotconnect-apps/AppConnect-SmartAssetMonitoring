@@ -9,15 +9,15 @@
 	</div>
 	<mat-card class="dashboard-card mat-card pt-0">
 		<ng-scrollbar class="my-scrollbar m-b-55" trackX="false" trackY="true" autohide="false" [compact]="true">
-			<ul *ngIf="alerts.length > 0" class="alerts-dashboard alerts-dashboard-legend">
+			<ul *ngIf="alerts.length > 0" class="alerts-dashboard alerts-dashboard-legend" [ngStyle]="{'width' : '98%'}">
 				<li *ngFor="let alert of alerts" class="{{alert['severity']}}">
 					<span class="alert-info-title">{{alert['message']}}</span>
 					<span class="alerts-info">{{alert['buildingName']}}</span>
 					<span class="alerts-info text-right p-r-10 alerts-date-text">{{getLocalDate(alert['eventDate'])}}</span>
 				</li>
 			</ul>
-			<ul *ngIf="alerts.length == 0" class="alerts-dashboard d-flex align-items-center justify-content-center">
-				<div class="centerclass">No records found</div>
+			<ul *ngIf="alerts.length == 0" class="alerts-dashboard d-flex align-items-center justify-content-center h-100">
+				<div class="centerclass h-100">No records found</div>
 			</ul>
 		</ng-scrollbar>
 		<div *ngIf="alerts.length>0"  class="alert-indicator-wrapper">

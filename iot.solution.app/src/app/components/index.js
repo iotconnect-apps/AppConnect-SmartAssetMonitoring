@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SizeDetectorComponent = exports.WidgetChartCComponent = exports.WidgetChartBComponent = exports.WidgetChartAComponent = exports.WidgetAlertBComponent = exports.WidgetAlertAComponent = exports.WidgetCounterHComponent = exports.WidgetCounterGComponent = exports.WidgetCounterFComponent = exports.WidgetCounterEComponent = exports.WidgetCounterDComponent = exports.WidgetCounterCComponent = exports.WidgetCounterBComponent = exports.WidgetCounterAComponent = exports.DynamicDashboardComponent = exports.AddAssetComponent = exports.AssetDashboardComponent = exports.AssetsListComponent = exports.AddTypeComponent = exports.AssetTypesComponent = exports.CallbackComponent = exports.AddInventoryComponent = exports.InventoryListComponent = exports.ProductsListComponent = exports.AddProductsComponent = exports.ScheduleMaintenanceComponent = exports.MaintenanceListComponent = exports.VendingMachineDashboardComponent = exports.AddMachineComponent = exports.VendingMachinesListComponent = exports.LocationDetailsComponent = exports.AddLocationComponent = exports.LocationListComponent = exports.AlertsComponent = exports.PaymentComponent = exports.PurchasePlanComponent = exports.RegisterComponent = exports.BulkuploadAddComponent = exports.SubscriberDetailComponent = exports.AdminUserAddComponent = exports.UserAdminListComponent = exports.HardwareAddComponent = exports.HardwareListComponent = exports.SubscribersListComponent = exports.AdminDashboardComponent = exports.AdminLoginComponent = exports.MessageDialogComponent = exports.HomeComponent = exports.ChangePasswordComponent = exports.MyProfileComponent = exports.UserAddComponent = exports.UserListComponent = exports.FlashMessageComponent = exports.SettingsComponent = exports.ExtendMeetingComponent = exports.ResetpasswordComponent = exports.DeleteDialogComponent = exports.ConfirmDialogComponent = exports.SearchRenderComponent = exports.PaginationRenderComponent = exports.PageSizeRenderComponent = exports.DashboardComponent = exports.FooterComponent = exports.LoginFooterComponent = exports.LoginHeaderComponent = exports.HeaderComponent = exports.LeftMenuComponent = exports.LoginComponent = exports.RolesAddComponent = exports.RolesListComponent = void 0;
 var roles_list_component_1 = require("./roles/roles-list/roles-list.component");
 Object.defineProperty(exports, "RolesListComponent", { enumerable: true, get: function () { return roles_list_component_1.RolesListComponent; } });
 var roles_add_component_1 = require("./roles/roles-add/roles-add.component");
@@ -110,4 +111,36 @@ var asset_dashboard_component_1 = require("./assets/asset-dashboard/asset-dashbo
 Object.defineProperty(exports, "AssetDashboardComponent", { enumerable: true, get: function () { return asset_dashboard_component_1.AssetDashboardComponent; } });
 var add_asset_component_1 = require("./assets/add-asset/add-asset.component");
 Object.defineProperty(exports, "AddAssetComponent", { enumerable: true, get: function () { return add_asset_component_1.AddAssetComponent; } });
+/*Dynamic Dashboard Start*/
+var dynamic_dashboard_component_1 = require("./dynamic-dashboard/dynamic-dashboard/dynamic-dashboard.component");
+Object.defineProperty(exports, "DynamicDashboardComponent", { enumerable: true, get: function () { return dynamic_dashboard_component_1.DynamicDashboardComponent; } });
+var widget_counter_a_component_1 = require("./dynamic-dashboard/child-components/widget-counter-a/widget-counter-a.component");
+Object.defineProperty(exports, "WidgetCounterAComponent", { enumerable: true, get: function () { return widget_counter_a_component_1.WidgetCounterAComponent; } });
+var widget_counter_b_component_1 = require("./dynamic-dashboard/child-components/widget-counter-b/widget-counter-b.component");
+Object.defineProperty(exports, "WidgetCounterBComponent", { enumerable: true, get: function () { return widget_counter_b_component_1.WidgetCounterBComponent; } });
+var widget_counter_c_component_1 = require("./dynamic-dashboard/child-components/widget-counter-c/widget-counter-c.component");
+Object.defineProperty(exports, "WidgetCounterCComponent", { enumerable: true, get: function () { return widget_counter_c_component_1.WidgetCounterCComponent; } });
+var widget_counter_d_component_1 = require("./dynamic-dashboard/child-components/widget-counter-d/widget-counter-d.component");
+Object.defineProperty(exports, "WidgetCounterDComponent", { enumerable: true, get: function () { return widget_counter_d_component_1.WidgetCounterDComponent; } });
+var widget_counter_e_component_1 = require("./dynamic-dashboard/child-components/widget-counter-e/widget-counter-e.component");
+Object.defineProperty(exports, "WidgetCounterEComponent", { enumerable: true, get: function () { return widget_counter_e_component_1.WidgetCounterEComponent; } });
+var widget_counter_f_component_1 = require("./dynamic-dashboard/child-components/widget-counter-f/widget-counter-f.component");
+Object.defineProperty(exports, "WidgetCounterFComponent", { enumerable: true, get: function () { return widget_counter_f_component_1.WidgetCounterFComponent; } });
+var widget_counter_g_component_1 = require("./dynamic-dashboard/child-components/widget-counter-g/widget-counter-g.component");
+Object.defineProperty(exports, "WidgetCounterGComponent", { enumerable: true, get: function () { return widget_counter_g_component_1.WidgetCounterGComponent; } });
+var widget_counter_h_component_1 = require("./dynamic-dashboard/child-components/widget-counter-h/widget-counter-h.component");
+Object.defineProperty(exports, "WidgetCounterHComponent", { enumerable: true, get: function () { return widget_counter_h_component_1.WidgetCounterHComponent; } });
+var widget_alert_a_component_1 = require("./dynamic-dashboard/child-components/widget-alert-a/widget-alert-a.component");
+Object.defineProperty(exports, "WidgetAlertAComponent", { enumerable: true, get: function () { return widget_alert_a_component_1.WidgetAlertAComponent; } });
+var widget_alert_b_component_1 = require("./dynamic-dashboard/child-components/widget-alert-b/widget-alert-b.component");
+Object.defineProperty(exports, "WidgetAlertBComponent", { enumerable: true, get: function () { return widget_alert_b_component_1.WidgetAlertBComponent; } });
+var widget_chart_a_component_1 = require("./dynamic-dashboard/child-components/widget-chart-a/widget-chart-a.component");
+Object.defineProperty(exports, "WidgetChartAComponent", { enumerable: true, get: function () { return widget_chart_a_component_1.WidgetChartAComponent; } });
+var widget_chart_b_component_1 = require("./dynamic-dashboard/child-components/widget-chart-b/widget-chart-b.component");
+Object.defineProperty(exports, "WidgetChartBComponent", { enumerable: true, get: function () { return widget_chart_b_component_1.WidgetChartBComponent; } });
+var widget_chart_c_component_1 = require("./dynamic-dashboard/child-components/widget-chart-c/widget-chart-c.component");
+Object.defineProperty(exports, "WidgetChartCComponent", { enumerable: true, get: function () { return widget_chart_c_component_1.WidgetChartCComponent; } });
+var size_detector_component_1 = require("./dynamic-dashboard/size-detector/size-detector.component");
+Object.defineProperty(exports, "SizeDetectorComponent", { enumerable: true, get: function () { return size_detector_component_1.SizeDetectorComponent; } });
+/*Dynamic Dashboard End*/
 //# sourceMappingURL=index.js.map

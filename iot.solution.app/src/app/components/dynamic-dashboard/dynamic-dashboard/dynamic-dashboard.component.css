@@ -71,19 +71,6 @@ div.color-picker.open{
 .gridster-wrapper .drag-body {
     height: 100%;
 }
-.gridster-wrapper .widget-reading-left,.gridster-wrapper .widget-reading-right{
-	padding: 2px 8px;
-}
-.gridster-wrapper .widget-reading-left .dashboard-chart p,.gridster-wrapper .widget-reading-right .dashboard-chart p{
-	margin: 3px 0 0 !important;
-}  
-.gridster-wrapper .widget-readings-box{
-	margin-bottom: 5px;
-}
-.gridster-wrapper .widget-counter-f,.gridster-wrapper .widget-counter-g{
-	padding-left: 10px;
-    padding-right: 10px;
-}
 .gridster-wrapper .edit-mode-dashboard{
 	max-height: calc(100vh - 245px) !important;
 	min-height: calc(100vh - 245px) !important;

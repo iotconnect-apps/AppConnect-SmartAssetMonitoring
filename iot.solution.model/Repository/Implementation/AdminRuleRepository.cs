@@ -11,6 +11,8 @@ using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
 
 using LogHandler = component.services.loghandler;
+using Microsoft.EntityFrameworkCore;
+
 namespace iot.solution.model.Repository.Implementation
 {
     public class AdminRuleRepository : GenericRepository<Model.AdminRule>, IAdminRuleRepository
@@ -41,7 +43,7 @@ namespace iot.solution.model.Repository.Implementation
                 else
                     isAdmin = false;
 
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, request.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("search", request.SearchText, DbType.String, ParameterDirection.Input));

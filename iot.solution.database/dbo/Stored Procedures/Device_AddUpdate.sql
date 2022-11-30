@@ -209,9 +209,9 @@ BEGIN
 								[displayName] = A.[attrDispName]
 				WHEN NOT MATCHED THEN
 					INSERT ([guid], [companyGuid], [deviceGuid], [attrGuid], [attrName], [displayName], [createdDate], [createdBy], [updatedDate], [updatedBy])
-					VALUES (NEWID(), @companyGuid, @guid, A.[attrGuid], A.[attrName], A.[attrDispName], @dt, @invokingUser, @dt, @invokingUser)
-				WHEN NOT MATCHED BY SOURCE
-					THEN DELETE;
+					VALUES (NEWID(), @companyGuid, @guid, A.[attrGuid], A.[attrName], A.[attrDispName], @dt, @invokingUser, @dt, @invokingUser);
+				--WHEN NOT MATCHED BY SOURCE
+				--	THEN DELETE;
 
 			END
 		

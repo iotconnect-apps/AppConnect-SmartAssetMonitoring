@@ -107,33 +107,34 @@ namespace host.iot.solution.Controllers
             return response;
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route(DeviceMaintenanceRoute.Route.BySearch, Name = DeviceMaintenanceRoute.Name.BySearch)]
-        public Entity.BaseResponse<Entity.SearchResult<List<Entity.DeviceMaintenanceDetail>>> GetBySearch(string entityGuid = "", string deviceId = "", string searchText = "", int? pageNo = 1, int? pageSize = 10, string orderBy = "", DateTime? currentDate = null, string timeZone = "")
+        public Entity.BaseResponse<Entity.SearchResult<List<Entity.DeviceMaintenanceDetail>>> GetBySearch([FromBody] Entity.DeviceMaintenanceListRequest request)
         {
             Entity.BaseResponse<Entity.SearchResult<List<Entity.DeviceMaintenanceDetail>>> response = new Entity.BaseResponse<Entity.SearchResult<List<Entity.DeviceMaintenanceDetail>>>(true);
             try
             {
-                if (!currentDate.HasValue)
+                if (!request.currentDate.HasValue)
                 {
                     return new Entity.BaseResponse<Entity.SearchResult<List<Entity.DeviceMaintenanceDetail>>>(false, "Current Date is required");
                 }
-                else if (string.IsNullOrEmpty(timeZone))
+                else if (string.IsNullOrEmpty(request.timeZone))
                 {
-                    return new Entity.BaseResponse<Entity.SearchResult<List<Entity.DeviceMaintenanceDetail>>>(false, "Time Zone is required"); 
+                    return new Entity.BaseResponse<Entity.SearchResult<List<Entity.DeviceMaintenanceDetail>>>(false, "Time Zone is required");
                 }
                 else
                 {
                     response.Data = _maintenanceService.List(new Entity.SearchRequest()
                     {
-                        EntityId = string.IsNullOrEmpty(entityGuid) ? Guid.Empty : new Guid(entityGuid),
-                        Guid = string.IsNullOrEmpty(deviceId) ? null : deviceId,
-                        SearchText = searchText,
-                        PageNumber = pageNo.Value,
-                        PageSize = pageSize.Value,
-                        OrderBy = orderBy,
-                        CurrentDate = currentDate,
-                        TimeZone = timeZone
+                        ParentEntityGuid = string.IsNullOrEmpty(request.parentEntityGuid) ? Guid.Empty : new Guid(request.parentEntityGuid),
+                        EntityId = string.IsNullOrEmpty(request.entityGuid) ? Guid.Empty : new Guid(request.entityGuid),
+                        Guid = string.IsNullOrEmpty(request.deviceId) ? null : request.deviceId,
+                        SearchText = request.searchText,
+                        PageNumber = request.pageNo.Value,
+                        PageSize = request.pageSize.Value,
+                        OrderBy = request.orderBy,
+                        CurrentDate = request.currentDate,
+                        TimeZone = request.timeZone
                     });
                 }
             }

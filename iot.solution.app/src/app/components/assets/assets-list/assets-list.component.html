@@ -38,7 +38,8 @@
                 <div class="support-field">
                   <div class="field-input">
                     <mat-form-field class="">
-                      <mat-select placeholder="Select Location" formControlName="locationGuid" name="locationGuid" (selectionChange)="onLocationChange($event.value);">
+                      <mat-select placeholder="Select Location" formControlName="locationGuid" [(ngModel)]="searchParameters.parentEntityGuid"
+                                  name="locationGuid" (selectionChange)="onLocationChange($event.value);">
                         <mat-option *ngFor="let location of locations" [value]="location.value">
                           {{location.text}}
                         </mat-option>

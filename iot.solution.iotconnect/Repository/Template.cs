@@ -37,15 +37,10 @@ namespace IoTConnect.TemplateProvider
         #endregion
 
         #region Private Methods
-        /// <summary>
-        /// Handles the flurl error asynchronous.
-        /// </summary>
-        /// <param name="call">The call.</param>
-        /// <returns></returns>
-        private void HandleFlurlErrorAsync(HttpCall call)
+        private void HandleFlurlErrorAsync(FlurlCall call)
         {
             call.ExceptionHandled = true;
-            IoTConnectException ioTConnectErrorResponse = JsonConvert.DeserializeObject<IoTConnectException>(call.Response.Content.ReadAsStringAsync().Result);
+            IoTConnectException ioTConnectErrorResponse = JsonConvert.DeserializeObject<IoTConnectException>(call.HttpResponseMessage.Content.ReadAsStringAsync().Result);
             throw ioTConnectErrorResponse;
         }
         #endregion
@@ -236,7 +231,7 @@ namespace IoTConnect.TemplateProvider
 
                 return new DataResponse<List<AllTemplateResult>>(null)
                 {
-                    data = result.Data,
+                    data = result.Data.Where(t => t.isSolutionTemplate == true).ToList(),
                     message = result.Message,
                     status = true
                 };

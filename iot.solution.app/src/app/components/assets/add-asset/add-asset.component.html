@@ -16,16 +16,16 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Asset ID<b>*</b></label>
                 <mat-form-field>
-                  <input matInput name="uniqueId" formControlName="uniqueId" maxlength="60" type="text" [(ngModel)]="assetObject['uniqueId']"
-                         class="form-control" tabindex="1" placeholder="Asset ID" >
+                  <input matInput name="uniqueId" formControlName="uniqueId" maxlength="60" type="text"
+                    [(ngModel)]="assetObject['uniqueId']" class="form-control" tabindex="1" placeholder="Asset ID">
                   <div class="form-control-feedback" *ngIf="assetForm.controls['uniqueId'].errors">
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                       *ngIf="assetForm.controls['uniqueId'].errors.required && checkSubmitStatus">
+                      *ngIf="assetForm.controls['uniqueId'].errors.required && checkSubmitStatus">
                       Please enter Asset ID
                     </p>
                     <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
-                       *ngIf="assetForm.controls['uniqueId'].hasError('whitespace')">
-                      Please enter valid data
+                      *ngIf="assetForm.controls['uniqueId'].errors.pattern">
+                      Asset ID must be alphanumeric.
                     </p>
                   </div>
                 </mat-form-field>
@@ -35,15 +35,15 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Asset Name<b>*</b></label>
                 <mat-form-field>
-                  <input matInput name="name" formControlName="name" maxlength="60" type="text" [(ngModel)]="assetObject['name']"
-                         class="form-control" tabindex="1" placeholder="Asset Name">
+                  <input matInput name="name" formControlName="name" maxlength="60" type="text"
+                    [(ngModel)]="assetObject['name']" class="form-control" tabindex="1" placeholder="Asset Name">
                   <div class="form-control-feedback" *ngIf="assetForm.controls['name'].errors">
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                       *ngIf="assetForm.controls['name'].errors.required && checkSubmitStatus">
+                      *ngIf="assetForm.controls['name'].errors.required && checkSubmitStatus">
                       Please enter Asset Name
                     </p>
                     <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
-                       *ngIf="assetForm.controls['name'].hasError('whitespace')">
+                      *ngIf="assetForm.controls['name'].hasError('whitespace')">
                       Please enter valid data
                     </p>
                   </div>
@@ -55,8 +55,9 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Description</label>
                 <mat-form-field>
-                  <textarea matInput rows="3" maxlength="260" tabindex="12" class="form-control" formControlName="description"
-                            placeholder="Description" name="description" [(ngModel)]="assetObject['description']"></textarea>
+                  <textarea matInput rows="3" maxlength="260" tabindex="12" class="form-control"
+                    formControlName="description" placeholder="Description" name="description"
+                    [(ngModel)]="assetObject['description']"></textarea>
                 </mat-form-field>
               </fieldset>
             </div>
@@ -65,15 +66,16 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Location<b>*</b></label>
                 <mat-form-field>
-                  <mat-select placeholder="Select Location" tabindex="13" formControlName="locationGuid" [(ngModel)]="assetObject['parentEntityGuid']"
-                              (selectionChange)="getZoneLookup($event.value);getAssetTypeLookup($event.value);">
+                  <mat-select placeholder="Select Location" tabindex="13" formControlName="locationGuid"
+                    [(ngModel)]="assetObject['parentEntityGuid']"
+                    (selectionChange)="getZoneLookup($event.value);getAssetTypeLookup($event.value);">
                     <mat-option *ngFor="let location of locationList" [value]="location?.value | lowercase">
                       {{location.text}}
                     </mat-option>
                   </mat-select>
                   <div class="form-control-feedback" *ngIf="assetForm.controls['locationGuid'].errors">
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                       *ngIf="assetForm.controls['locationGuid'].errors.required && checkSubmitStatus">
+                      *ngIf="assetForm.controls['locationGuid'].errors.required && checkSubmitStatus">
                       Please select Location
                     </p>
                   </div>
@@ -85,14 +87,15 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Zone<b>*</b></label>
                 <mat-form-field>
-                  <mat-select placeholder="Select Zone" tabindex="14" formControlName="entityGuid" [(ngModel)]="assetObject['entityGuid']">
+                  <mat-select placeholder="Select Zone" tabindex="14" formControlName="entityGuid"
+                    [(ngModel)]="assetObject['entityGuid']">
                     <mat-option *ngFor="let zone of zoneList" [value]="zone?.value | lowercase">
                       {{zone.text}}
                     </mat-option>
                   </mat-select>
                   <div class="form-control-feedback" *ngIf="assetForm.controls['entityGuid'].errors">
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                       *ngIf="assetForm.controls['entityGuid'].errors.required && checkSubmitStatus">
+                      *ngIf="assetForm.controls['entityGuid'].errors.required && checkSubmitStatus">
                       Please select Zone
                     </p>
                   </div>
@@ -103,14 +106,15 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Asset Type<b>*</b></label>
                 <mat-form-field>
-                  <mat-select placeholder="Select Asset Type" tabindex="15" formControlName="typeGuid" (selectionChange)="getTemplateAttributeLookup($event.value);" [(ngModel)]="assetObject['typeGuid']">
+                  <mat-select placeholder="Select Asset Type" tabindex="15" formControlName="typeGuid"
+                    (selectionChange)="getTemplateAttributeLookup($event.value);" [(ngModel)]="assetObject['typeGuid']">
                     <mat-option *ngFor="let type of assetTypeList" [value]="type?.value | lowercase">
                       {{type.text}}
                     </mat-option>
                   </mat-select>
                   <div class="form-control-feedback" *ngIf="assetForm.controls['typeGuid'].errors">
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                       *ngIf="assetForm.controls['typeGuid'].errors.required && checkSubmitStatus">
+                      *ngIf="assetForm.controls['typeGuid'].errors.required && checkSubmitStatus">
                       Please select Asset Type
                     </p>
                   </div>
@@ -121,24 +125,23 @@
             <div class="col-md-12">
               <fieldset class="form-group form-field">
                 <label class="form-label">Specification<b>*</b></label>
-                <ckeditor [(ngModel)]="assetObject['specification']" 
-                maxlength="1000"
-                formControlName="specification"  name="PageContent" required [config]="ckeConfig" debounce="500">    
-                    
-                </ckeditor>    
+                <ckeditor [(ngModel)]="assetObject['specification']" maxlength="1000" formControlName="specification"
+                  name="PageContent" required [config]="ckeConfig" debounce="500">
+
+                </ckeditor>
                 <!-- <mat-form-field> -->
-                  
-                  <!-- <textarea matInput rows="3" maxlength="260" tabindex="16" class="form-control" formControlName="specification"
+
+                <!-- <textarea matInput rows="3" maxlength="260" tabindex="16" class="form-control" formControlName="specification"
                             placeholder="specification" name="specification" [(ngModel)]="assetObject['specification']"></textarea> -->
                 <!-- </mat-form-field> -->
                 <div class="form-control-feedback" *ngIf="assetForm.controls['specification'].errors">
                   <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                     *ngIf="assetForm.controls['specification'].errors.required && checkSubmitStatus">
+                    *ngIf="assetForm.controls['specification'].errors.required && checkSubmitStatus">
                     Please add specification
                   </p>
                   <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                     *ngIf="assetForm.controls['specification'].errors.maxlength && checkSubmitStatus">
-                     Please keep character length under 1000
+                    *ngIf="assetForm.controls['specification'].errors.maxlength && checkSubmitStatus">
+                    Please keep character length under 1000
                   </p>
                 </div>
               </fieldset>
@@ -159,31 +162,32 @@
           <section>
             <ng-container *ngIf="sensorList.length">
               <div [formGroup]="attrForm">
-                <div class="row parameter-flex-wrapper" >
-                  <div class="col-lg-3 col-md-3" >
+                <div class="row parameter-flex-wrapper">
+                  <div class="col-lg-3 col-md-3">
                     <ng-container *ngFor="let attribute of sensorList">
                       <div class="parameter-select-box w-100">
                         <div>
                           <fieldset class="form-group form-field">
                             <label class="form-label">{{attribute.localName}}<b>*</b></label>
-                        </fieldset>
+                          </fieldset>
                         </div>
                       </div>
                     </ng-container>
                   </div>
 
-                  <div class="col-lg-9 col-md-9" >
+                  <div class="col-lg-9 col-md-9">
                     <div class="parameter-form-box">
                       <div class="row align-items-center">
                         <div class="col-ld-3 col-lg-5 col-md-6" formArrayName="dispName">
-                          <div class="parameter-input"  *ngFor="let dpName of dispName.controls; index as idx">
+                          <div class="parameter-input" *ngFor="let dpName of dispName.controls; index as idx">
                             <li class="p-b-15">
                               <mat-form-field>
                                 <input matInput [formControlName]="idx" maxlength="50" type="text"
-                                       [(ngModel)]="(!assetObject['deviceAttributes'][idx])?'':assetObject['deviceAttributes'][idx].dispName">
-                                <div class="form-control-feedback" *ngIf="attrForm.get('dispName').controls[idx].invalid">
+                                  [(ngModel)]="(!assetObject['deviceAttributes'][idx])?'':assetObject['deviceAttributes'][idx].dispName">
+                                <div class="form-control-feedback"
+                                  *ngIf="attrForm.get('dispName').controls[idx].invalid">
                                   <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
-                                     *ngIf="attrForm.get('dispName').controls[idx].invalid && checkSubmitStatus">
+                                    *ngIf="attrForm.get('dispName').controls[idx].invalid && checkSubmitStatus">
                                     Please enter Display Name
                                   </p>
                                 </div>
@@ -203,111 +207,97 @@
 
           <div class="row m-t-20">
 
-              <div class="col-md-12">
-                <mat-label>Asset Image</mat-label>
-                <fieldset class="form-group">
-                  <label for="myFile" class="upload-file">
-                    <input formControlName="imageFiles" id="myFile" tabindex="13"
-                           (change)="handleImageInput($event)" #myFile
-                           class="upload-image" type="file"
-                           accept=".jpg, .jpeg, .png" multiple />
-                    <div class="form-control-feedback" *ngIf="assetForm.controls['imageFiles'].errors">
-                      <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                         *ngIf="assetForm.controls['imageFiles'].errors.required && checkSubmitStatus">
-                        Upload Image
-                      </p>
+            <div class="col-md-12">
+              <mat-label>Asset Image</mat-label>
+              <fieldset class="form-group">
+                <label for="myFile" class="upload-file" title=".jpg, .jpeg, .png">
+                  <input formControlName="imageFiles" id="myFile" tabindex="13" (change)="handleImageInput($event)"
+                    #myFile class="upload-image" type="file" accept=".jpg, .jpeg, .png" multiple />
+                  <div class="form-control-feedback" *ngIf="assetForm.controls['imageFiles'].errors">
+                    <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+                      *ngIf="assetForm.controls['imageFiles'].errors.required && checkSubmitStatus">
+                      Upload Image
+                    </p>
+                  </div>
+                </label>
+              </fieldset>
+              <fieldset class="form-group">
+                <ul class="image-list m-b-30" *ngIf="selectedImages.length">
+                  <li *ngFor="let img of selectedImages">
+                    <div class="user-profle-image">
+                      <img alt="" class="img-fluid" #locationImg src="{{img.url}}" />
                     </div>
-                  </label>
-                </fieldset>
-                <fieldset class="form-group">
-                  <ul class="image-list m-b-30" *ngIf="selectedImages.length">
-                    <li *ngFor="let img of selectedImages">
-                      <div class="user-profle-image">
-                        <img alt="" class="img-fluid" #locationImg src="{{img.url}}" />
-                      </div>
-                      <span>
-                        <i class="material-icons" (click)="imagesRemove(img.name)">clear</i>
-                      </span>
-                    </li>
-                  </ul>
-                  <ul class="image-list added-media-carousel" *ngIf="assetObject['deviceImageFiles']">
-                    <!-- <ngx-slick-carousel class="carousel w-100"
+                    <span>
+                      <i class="material-icons" (click)="imagesRemove(img.name)">clear</i>
+                    </span>
+                  </li>
+                </ul>
+                <ul class="image-list added-media-carousel" *ngIf="assetObject['deviceImageFiles']">
+                  <!-- <ngx-slick-carousel class="carousel w-100"
                                         #refrigeratorCarousel="slick-carousel"
                                         [config]="slideConfig"> -->
-                                        <!-- ngxSlickItem -->
-                      <li  *ngFor="let image of selectedImagesObj"
-                          class="carousel-list-item">
-                        <div class="user-profle-image">
-                          <img alt="" class="img-fluid" #locationImg
-                               src="{{image['guid'] == '00000000-0000-0000-0000-000000000000' || image['guid'] == null || image['guid'] == '' ? _appConstant.noImg: mediaUrl + image['filePath']}}" />
-                        </div>
-                        <span  *ngIf="isEdit">
-                          <i class="material-icons" (click)="deleteImgModel(image)">clear</i>
-                        </span>
-                      </li>
-                    <!-- </ngx-slick-carousel> -->
-                  </ul>
-                </fieldset>
-
-              </div>
-              <div class="col-md-12">
-                <mat-label>Media File</mat-label>
-                <fieldset class="form-group">
-                  <label for="mediaFile" class="upload-file">
-                    <input formControlName="mediaFiles" id="mediaFile" tabindex="14"
-                           (change)="handleMediaFileInput($event)" class="upload-image"
-                           type="file" accept=".pdf,.doc,.docx" multiple #mediaFile />
-                    <div class="form-control-feedback" *ngIf="assetForm.controls['mediaFiles'].errors">
-                      <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                         *ngIf="assetForm.controls['mediaFiles'].errors.required && checkSubmitStatus">
-                        Upload Media Files (doc, docx, pdf files only)
-                      </p>
+                  <!-- ngxSlickItem -->
+                  <li *ngFor="let image of selectedImagesObj" class="carousel-list-item">
+                    <div class="user-profle-image">
+                      <img alt="" class="img-fluid" #locationImg
+                        src="{{image['guid'] == '00000000-0000-0000-0000-000000000000' || image['guid'] == null || image['guid'] == '' ? _appConstant.noImg:  image['filePath']}}" />
                     </div>
-                  </label>
-                </fieldset>
+                    <span *ngIf="isEdit">
+                      <i class="material-icons" (click)="deleteImgModel(image)">clear</i>
+                    </span>
+                  </li>
+                  <!-- </ngx-slick-carousel> -->
+                </ul>
+              </fieldset>
 
-                <fieldset class="form-group">
+            </div>
+            <div class="col-md-12">
+              <mat-label>Media File</mat-label>
+              <fieldset class="form-group">
+                <label for="mediaFile" class="upload-file" title=".pdf,.doc,.docx">
+                  <input formControlName="mediaFiles" id="mediaFile" tabindex="14"
+                    (change)="handleMediaFileInput($event)" class="upload-image" type="file" accept=".pdf,.doc,.docx"
+                    multiple #mediaFile />
+                  <div class="form-control-feedback" *ngIf="assetForm.controls['mediaFiles'].errors">
+                    <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+                      *ngIf="assetForm.controls['mediaFiles'].errors.required && checkSubmitStatus">
+                      Upload Media Files (doc, docx, pdf files only)
+                    </p>
+                  </div>
+                </label>
+              </fieldset>
 
-                  <ul class="upload-file-list m-b-15"
-                      *ngIf="assetObject['deviceMediaFiles']">
-                    <li *ngFor="let file of selectedFilesObj">
-                      <a href="javascript:;" class="file-name"
-                         [matTooltip]="file.description"
-                         matTooltipPosition="below">
-                        <i class="fas fa-file-pdf"
-                           *ngIf="file.fileName.split('.').slice(1, 2).join('.') == 'pdf'"></i>
-                        <i class="fas fa-file-word"
-                           *ngIf="file.fileName.split('.').slice(1, 2).join('.') == 'docx' ||
+              <fieldset class="form-group">
+
+                <ul class="upload-file-list m-b-15" *ngIf="assetObject['deviceMediaFiles']">
+                  <li *ngFor="let file of selectedFilesObj">
+                    <a href="javascript:;" class="file-name" [matTooltip]="file.description" matTooltipPosition="below">
+                      <i class="fas fa-file-pdf" *ngIf="file.fileName.split('.').slice(1, 2).join('.') == 'pdf'"></i>
+                      <i class="fas fa-file-word" *ngIf="file.fileName.split('.').slice(1, 2).join('.') == 'docx' ||
                     file.fileName.split('.').slice(1, 2).join('.') == 'docx'"></i>
-                        <span>{{file.description}}</span>
-                      </a>
-                      <a href="javascript:;" *ngIf="isEdit"
-                         (click)="removeMediaFile(file)">
-                        <i class="far fa-times-circle"></i>
-                      </a>
-                    </li>
-                  </ul>
-                  <ul class="upload-file-list">
-                    <li *ngFor="let file of selectedFiles">
-                      <a href="javascript:;" class="file-name"
-                         [matTooltip]="file.name"
-                         matTooltipPosition="below">
-                        <i class="fas fa-file-pdf"
-                           *ngIf="file.name.split('.').slice(1, 2).join('.') == 'pdf'"></i>
-                        <i class="fas fa-file-word"
-                           *ngIf="file.name.split('.').slice(1, 2).join('.') == 'docx' ||
+                      <span>{{file.description}}</span>
+                    </a>
+                    <a href="javascript:;" *ngIf="isEdit" (click)="removeMediaFile(file)">
+                      <i class="far fa-times-circle"></i>
+                    </a>
+                  </li>
+                </ul>
+                <ul class="upload-file-list">
+                  <li *ngFor="let file of selectedFiles">
+                    <a href="javascript:;" class="file-name" [matTooltip]="file.name" matTooltipPosition="below">
+                      <i class="fas fa-file-pdf" *ngIf="file.name.split('.').slice(1, 2).join('.') == 'pdf'"></i>
+                      <i class="fas fa-file-word" *ngIf="file.name.split('.').slice(1, 2).join('.') == 'docx' ||
                       file.name.split('.').slice(1, 2).join('.') == 'docx'"></i>
-                        <span>{{file.name}}</span>
-                      </a>
-                      <a href="javascript:;" *ngIf="selectedFiles"
-                         (click)="fileRemove(file.name)">
-                        <i class="far fa-times-circle"></i>
-                      </a>
-                      <!-- {{file.name.split('.').slice(1, 2).join('.')}} -->
-                    </li>
-                  </ul>
-                </fieldset>
-              </div>
+                      <span>{{file.name}}</span>
+                    </a>
+                    <a href="javascript:;" *ngIf="selectedFiles" (click)="fileRemove(file.name)">
+                      <i class="far fa-times-circle"></i>
+                    </a>
+                    <!-- {{file.name.split('.').slice(1, 2).join('.')}} -->
+                  </li>
+                </ul>
+              </fieldset>
+            </div>
 
           </div>
 
@@ -322,14 +312,15 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Select Sensor<b>*</b></label>
                 <mat-form-field>
-                  <mat-select placeholder="Select Sensor" formControlName="sensorGuid" [(ngModel)]="assetObject['sensorGuid']">
+                  <mat-select placeholder="Select Sensor" formControlName="sensorGuid"
+                    [(ngModel)]="assetObject['sensorGuid']">
                     <mat-option *ngFor="let sensor of sensorList" [value]="sensor?.guid | lowercase">
                       {{sensor.localName}}
                     </mat-option>
                   </mat-select>
                   <div class="form-control-feedback" *ngIf="assetForm.controls['sensorGuid'].errors">
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                       *ngIf="assetForm.controls['sensorGuid'].errors.required && checkSubmitStatus">
+                      *ngIf="assetForm.controls['sensorGuid'].errors.required && checkSubmitStatus">
                       Please select Sensor
                     </p>
                   </div>
@@ -340,14 +331,16 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Select Condition<b>*</b></label>
                 <mat-form-field>
-                  <mat-select placeholder="Select Condition" formControlName="sensorCondition" [(ngModel)]="assetObject['sensorCondition']">
-                    <mat-option *ngFor="let sensorCondition of sensorConditionList" [value]="sensorCondition?.value | lowercase">
+                  <mat-select placeholder="Select Condition" formControlName="sensorCondition"
+                    [(ngModel)]="assetObject['sensorCondition']">
+                    <mat-option *ngFor="let sensorCondition of sensorConditionList"
+                      [value]="sensorCondition?.value | lowercase">
                       {{sensorCondition.text}}
                     </mat-option>
                   </mat-select>
                   <div class="form-control-feedback" *ngIf="assetForm.controls['sensorCondition'].errors">
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                       *ngIf="assetForm.controls['sensorCondition'].errors.required && checkSubmitStatus">
+                      *ngIf="assetForm.controls['sensorCondition'].errors.required && checkSubmitStatus">
                       Please select Condition
                     </p>
                   </div>
@@ -358,14 +351,15 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Select Value<b>*</b></label>
                 <mat-form-field>
-                  <input matInput type="number" placeholder="Sensor Value" formControlName="sensorValue" [(ngModel)]="assetObject['sensorValue']">
+                  <input matInput type="number" placeholder="Sensor Value" formControlName="sensorValue"
+                    [(ngModel)]="assetObject['sensorValue']">
                   <div class="form-control-feedback" *ngIf="assetForm.controls['sensorValue'].errors">
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                       *ngIf="assetForm.controls['sensorValue'].errors.required && checkSubmitStatus">
+                      *ngIf="assetForm.controls['sensorValue'].errors.required && checkSubmitStatus">
                       Please enter Sensor Value
                     </p>
                     <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
-                       *ngIf="assetForm.controls['sensorValue'].hasError('whitespace')">
+                      *ngIf="assetForm.controls['sensorValue'].hasError('whitespace')">
                       Please enter valid data
                     </p>
                   </div>
@@ -377,12 +371,12 @@
             <div class="col-lg-12">
               <div class="form-field">
                 <div class="input-field ">
-                  <button mat-flat-button color="primary"
-                          class="text-white" [title]="buttonName" type="submit" *ngIf="!isView">
+                  <button mat-flat-button color="primary" class="text-white" [title]="buttonName" type="submit"
+                    *ngIf="!isView">
                     {{buttonName}}
                   </button>
-                  <button mat-flat-button color="primary" class="text-white m-l-10"
-                          type="button" title="Cancel" (click)="clickCancel()">
+                  <button mat-flat-button color="primary" class="text-white m-l-10" type="button" title="Cancel"
+                    (click)="clickCancel()">
                     Cancel
                   </button>
                 </div>

@@ -90,7 +90,7 @@ BEGIN
 			,[isProvisioned]	BIT
 			,[isActive]			BIT
 			,[count]			BIGINT
-			,[totalAlert]		BIGINT
+			,[totalAlerts]		BIGINT
 			,[utilization]		INT
 			,[rowNum]			INT
 		)
@@ -125,7 +125,7 @@ BEGIN
 			, D.[isProvisioned]
 			, D.[isActive]
 			, 0 AS [count]	
-			, 0 AS [totalAlert]
+			, 0 AS [totalAlerts]
 			, 0 AS [utilization]
 			FROM [dbo].[Device] D WITH (NOLOCK) 
 			INNER JOIN [dbo].[Entity] G WITH (NOLOCK) ON D.[entityGuid] = G.[guid] AND G.[isDeleted] = 0
@@ -173,7 +173,7 @@ BEGIN
 
 		;WITH CTEDATA
 			AS 
-			(	SELECT t.[Guid],COUNT(A.[guid]) [totalAlert] FROM [IOTConnectAlert] A (NOLOCK)
+			(	SELECT t.[Guid],COUNT(A.[guid]) [totalAlerts] FROM [IOTConnectAlert] A (NOLOCK)
 				INNER JOIN #temp_Device t ON A.[deviceGuid] = t.[Guid]
 				GROUP BY t.[Guid]
 			)
@@ -189,7 +189,7 @@ BEGIN
 				GROUP BY D.[guid]
 		)
 		UPDATE t
-			SET [totalAlert] = ISNULL(c.[totalAlert],0)
+			SET [totalAlerts] = ISNULL(c.[totalAlerts],0)
 				, [image] = I.[filePath]
 				, [utilization] = CASE WHEN U.[totalCount] > 0 
 								THEN ISNULL((U.[utilizedCount] * 100 / U.[totalCount]),0)
@@ -222,7 +222,7 @@ BEGIN
 					, D.[isProvisioned]
 					, D.[isActive]	
 					, D.[count]		
-					, D.[totalAlert]
+					, D.[totalAlerts]
 					, D.[utilization]
 				FROM #temp_Device D
 				WHERE rowNum BETWEEN ((@pageNumber - 1) * @pageSize) + 1 AND (@pageSize * @pageNumber)			
@@ -249,7 +249,7 @@ BEGIN
 					, D.[isProvisioned]
 					, D.[isActive]		
 					, D.[count]		
-					, D.[totalAlert]
+					, D.[totalAlerts]
 					, D.[utilization]
 				FROM #temp_Device D
 			END

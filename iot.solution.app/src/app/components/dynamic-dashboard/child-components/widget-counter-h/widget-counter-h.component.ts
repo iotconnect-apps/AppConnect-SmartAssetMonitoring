@@ -1,7 +1,8 @@
-import {  OnInit, OnDestroy, Component, Input, ViewEncapsulation, EventEmitter } from '@angular/core';
+import {ChangeDetectorRef, ViewRef,  OnInit, OnDestroy, Component, Input, ViewEncapsulation, EventEmitter, ViewChild } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner'
-import { Notification, NotificationService, DashboardService } from 'app/services';
+import { Notification, NotificationService, DashboardService, DynamicDashboardService } from 'app/services';
 import {Subscription} from 'rxjs/Subscription'
+import { Observable } from 'rxjs';
 
 @Component({
 	selector: 'app-widget-counter-h',
@@ -25,10 +26,17 @@ export class WidgetCounterHComponent implements OnInit {
 		'infinite': false
 	};
 
+	/*All Observables*/
+	@ViewChild('refrigeratorCarousel', { static: false }) slickModal;
+	sideBarSubscription: Subscription;
+	/*All Observables*/
+
 	constructor(
 		private spinner: NgxSpinnerService,
 		private _notificationService: NotificationService,
-		private dashboardService : DashboardService
+		private dashboardService : DashboardService,
+		private changeDetector : ChangeDetectorRef,
+		public dynamicDashboardService: DynamicDashboardService,
 		){
 	}
 
@@ -36,6 +44,20 @@ export class WidgetCounterHComponent implements OnInit {
 		this.resizeSub = this.resizeEvent.subscribe((widget) => {
 		});
 		this.getDashboardoverviewByEntity();
+
+		this.sideBarSubscription = this.dynamicDashboardService.isToggleSidebarObs.subscribe((toggle) => {
+			let cond = false;
+			Observable.interval(1200)
+			.takeWhile(() => !cond)
+			.subscribe(i => {
+				this.slickModal.unslick();
+				this.slickModal.initSlick(this.slickModal);
+				cond = true;
+				if (this.changeDetector && !(this.changeDetector as ViewRef).destroyed) {
+					this.changeDetector.detectChanges();
+				}
+			});
+		})
 	}
 
 	getEntityDetails(entityId, entityIndex: number) {
@@ -48,6 +70,9 @@ export class WidgetCounterHComponent implements OnInit {
 			}
 			else {
 				this._notificationService.add(new Notification('error', response.message));
+			}
+			if (this.changeDetector && !(this.changeDetector as ViewRef).destroyed) {
+				this.changeDetector.detectChanges();
 			}
 		}, error => {
 			this.spinner.hide();
@@ -65,6 +90,11 @@ export class WidgetCounterHComponent implements OnInit {
 				if (entity.guid) {
 					this.getEntityDetails(entity.guid,0);
 				}
+			}
+			this.slickModal.unslick();
+			this.slickModal.initSlick(this.slickModal);
+			if (this.changeDetector && !(this.changeDetector as ViewRef).destroyed) {
+				this.changeDetector.detectChanges();
 			}
 		}, error => {
 			this.spinner.hide();

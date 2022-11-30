@@ -1,0 +1,11 @@
+﻿CREATE TABLE [dbo].[DocumentType](
+	[DocumentTypeId] [int] IDENTITY(1,1) NOT NULL,
+	[DocumentType] [varchar](150) NOT NULL,
+	[IsDeleted] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[DocumentTypeId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[DocumentType] ADD  DEFAULT ((0)) FOR [IsDeleted]

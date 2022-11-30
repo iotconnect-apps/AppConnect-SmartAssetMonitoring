@@ -65,20 +65,20 @@ export class DeviceService {
   }
 
   getMaintenancelist(parameters) {
-    const reqParameter: any = {
-      params: {
-        'entityGuid': parameters.zoneGuid || "",
-        // 'deviceId': parameters.zoneGuid || "",
-        'pageNo': parameters.pageNumber + 1,
-        'pageSize': parameters.pageSize,
-        'searchText': parameters.searchText || "",
-        'orderBy': parameters.sortBy || "",
-        'currentDate': moment(new Date()).format('YYYY-MM-DDTHH:mm:ss'),
-        'timeZone': moment().utcOffset()
-      }
+
+    const reqParameter = {
+      parentEntityGuid: parameters.parentEntityGuid,
+      entityGuid: parameters.entityGuid,
+      pageNo: parameters.pageNumber + 1,
+      pageSize: parameters.pageSize,
+      searchText: parameters.searchText,
+      orderBy: parameters.sortBy,
+      deviceId: parameters.deviceId,
+      currentDate: moment(new Date()).format('YYYY-MM-DDTHH:mm:ss'),
+      timeZone: moment().utcOffset()
     };
 
-    return this.httpClient.get<any>(this.apiServer.baseUrl + 'api/devicemaintenance/search', reqParameter).map(response => {
+    return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/devicemaintenance/search', reqParameter).map(response => {
       return response;
     });
   }
@@ -173,10 +173,10 @@ export class DeviceService {
     });
   }
 
-	/**
-	 * Delete Hardware kit by guid
-	 * @param guid
-	 */
+  /**
+   * Delete Hardware kit by guid
+   * @param guid
+   */
   deleteHardwarekit(guid) {
 
 
@@ -355,7 +355,7 @@ export class DeviceService {
 
     const parameter = {
       params: {
-        'userEmail': params.email
+        'consumerId': params.consumerId
       },
       timestamp: Date.now()
     };
@@ -421,20 +421,20 @@ export class DeviceService {
   manageAsset(data) {
     const formData = new FormData();
     for (const key of Object.keys(data)) {
-     const value = data[key];
-     if (data[key]) {
-       if (key === 'mediaFiles' || key == 'imageFiles') {
-         for (let i = 0; i < value.length; i++) {
-           formData.append(key, value[i]);
-         }
-        
-       } else if(key==='attrbs'){
+      const value = data[key];
+      if (data[key]) {
+        if (key === 'mediaFiles' || key == 'imageFiles') {
+          for (let i = 0; i < value.length; i++) {
+            formData.append(key, value[i]);
+          }
+
+        } else if (key === 'attrbs') {
           formData.append(key, JSON.stringify(value));
-       }
-        else{
-         formData.append(key, value);
         }
-     }
+        else {
+          formData.append(key, value);
+        }
+      }
     }
     // const formData = new FormData();
     // for (const key of Object.keys(data)) {
@@ -490,14 +490,14 @@ export class DeviceService {
       }
     };
     const parameter = {
-     
-        'parentEntityGuid':parameters.parentEntityGuid,
-        'entityGuid': parameters.entityGuid,
-        'pageNo': parameters.pageNumber + 1,
-        'pageSize': parameters.pageSize,
-        'searchText': parameters.searchText,
-        'orderBy': parameters.sortBy
-        // timestamp: Date.now()
+
+      'parentEntityGuid': parameters.parentEntityGuid,
+      'entityGuid': parameters.entityGuid,
+      'pageNo': parameters.pageNumber + 1,
+      'pageSize': parameters.pageSize,
+      'searchText': parameters.searchText,
+      'orderBy': parameters.sortBy
+      // timestamp: Date.now()
     };
     var reqParameter = Object.assign(parameter, configHeader);
 
@@ -540,8 +540,8 @@ export class DeviceService {
     });
   }
 
-  deleteFiles(deviceGuid, fileguid) {
-    return this.httpClient.put<any>(this.apiServer.baseUrl + 'api/device/deletemediafile/' + deviceGuid + '/' + fileguid, "").map(response => {
+  deleteFiles(deviceGuid, isImage: string, fileguid) {
+    return this.httpClient.put<any>(this.apiServer.baseUrl + 'api/device/deletemediafile/' + isImage + '/' + deviceGuid + '/' + fileguid, "").map(response => {
       return response;
     });
   }
@@ -581,8 +581,8 @@ export class DeviceService {
   }
 
   // Get company usage chart data
- getCompanyUsageChartData(data) {
-   return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/chart/getcompanyusage', data).map(response => {
+  getCompanyUsageChartData(data) {
+    return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/chart/getcompanyusage', data).map(response => {
       return response;
     });
   }

@@ -9,6 +9,7 @@ import { AppConstant, DeleteAlertDataModel } from "../../../app.constants";
 import { Notification, NotificationService, LocationService, LookupService } from 'app/services';
 import { empty } from 'rxjs';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
+import { CommonService } from 'app/services/common/common.service';
 
 @Component({
 	selector: 'app-user-list',
@@ -18,7 +19,7 @@ import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms'
 
 export class UserListComponent implements OnInit {
 	isFilterShow: boolean = false;
-	checkSubmitStatus:boolean=false;
+	checkSubmitStatus: boolean = false;
 	locationGuid: any;
 	changeStatusDeviceName: any;
 	changeStatusDeviceStatus: any;
@@ -30,10 +31,10 @@ export class UserListComponent implements OnInit {
 	pageSizeOptions: number[] = [5, 10, 25, 100];
 	moduleName = "Users";
 	displayedColumns: string[] = ['name', 'roleName', 'entityName', 'isActive', 'action'];
-	filterForm:FormGroup;
+	filterForm: FormGroup;
 
 	// ** static user list data
-	locations: any[] ;
+	locations: any[];
 	zones: any[];
 	isSearch = false;
 	orderBy = 'name';
@@ -55,8 +56,8 @@ export class UserListComponent implements OnInit {
 		private userService: UserService,
 		public _appConstant: AppConstant,
 		public locationService: LocationService,
-		public lookupService:LookupService,
-		private _notificationService: NotificationService,
+		public lookupService: LookupService,
+		private _notificationService: NotificationService, private commonService: CommonService
 	) { }
 
 	ngOnInit() {
@@ -68,17 +69,17 @@ export class UserListComponent implements OnInit {
 	/**
 	 * create search form
 	 */
-	createSearchForm(){
-		this.filterForm= new FormGroup({
-			locationGuid:new FormControl("",Validators.required)
+	createSearchForm() {
+		this.filterForm = new FormGroup({
+			locationGuid: new FormControl("", Validators.required)
 		});
 	}
 
-	resetSerachForm(){
-		this.checkSubmitStatus=false;
-		this.locationGuid="";
-		this.searchParameters.entityGuid=this.locationGuid;
-		this.searchParameters.pageNumber=0;
+	resetSerachForm() {
+		this.checkSubmitStatus = false;
+		this.locationGuid = "";
+		this.searchParameters.entityGuid = this.locationGuid;
+		this.searchParameters.pageNumber = 0;
 		this.getUserList();
 		this.showHideFilter();
 	}
@@ -88,7 +89,7 @@ export class UserListComponent implements OnInit {
 	/**
 	 * get location lookUp
 	 */
-	getLocationLookUp(){
+	getLocationLookUp() {
 		this.spinner.show();
 		this.lookupService.getLocationlookup(this.currentUser.userDetail.companyId).subscribe(response => {
 			this.spinner.hide();
@@ -102,7 +103,7 @@ export class UserListComponent implements OnInit {
 			this.spinner.hide();
 			this._notificationService.add(new Notification('error', error));
 		});
-		
+
 	}
 
 	/**
@@ -159,7 +160,7 @@ export class UserListComponent implements OnInit {
 	 * @param filterText 
 	 */
 	searchTextCallback(filterText) {
-		this.searchParameters.searchText = filterText;
+		this.searchParameters.searchText = this.commonService.getEncodedValue(filterText);
 		this.searchParameters.pageNumber = 0;
 		this.getUserList();
 		this.isSearch = true;
@@ -169,12 +170,12 @@ export class UserListComponent implements OnInit {
 	 * filtering value based on location and zone
 	 */
 	filterByLocationAndZone() {
-		this.checkSubmitStatus=true;
+		this.checkSubmitStatus = true;
 		if (this.filterForm.valid) {
 			this.searchParameters.entityGuid = this.locationGuid;
 			this.searchParameters.pageNumber = 0;
 			this.getUserList();
-			this.isSearch = true;	
+			this.isSearch = true;
 		}
 	}
 

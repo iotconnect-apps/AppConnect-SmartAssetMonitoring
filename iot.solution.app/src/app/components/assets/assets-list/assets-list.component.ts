@@ -28,6 +28,7 @@ export class AssetsListComponent implements OnInit {
   isSearch = false;
   pageSizeOptions: number[] = [5, 10, 25, 100];
   searchParameters = {
+    parentEntityGuid:'',
     entityGuid: '',
     pageNo: 0,
     pageSize: 10,
@@ -57,8 +58,8 @@ export class AssetsListComponent implements OnInit {
    */
   createFilterForm() {
     this.filterForm = new FormGroup({
-      locationGuid: new FormControl('', Validators.required),
-      zoneGuid: new FormControl('', Validators.required)
+      locationGuid: new FormControl(''),
+      zoneGuid: new FormControl('')
     });
   }
 
@@ -68,6 +69,7 @@ export class AssetsListComponent implements OnInit {
   filterAssetList() {
     this.checkSubmitStatus = true;
     if (this.filterForm.valid) {
+      this.searchParameters.pageNo = 0;
       this.getAssetList();
     }
   }
@@ -77,6 +79,7 @@ export class AssetsListComponent implements OnInit {
   * @param filterText
   */
   searchTextCallback(filterText) {
+    this.searchParameters.parentEntityGuid = '';
     this.searchParameters.entityGuid = '';
     this.searchParameters.searchText = filterText;
     this.searchParameters.pageNo = 0;
@@ -161,6 +164,7 @@ export class AssetsListComponent implements OnInit {
   resetForm() {
     this.filterForm.reset();
     this.checkSubmitStatus = false;
+    this.searchParameters.parentEntityGuid = '';
     this.searchParameters.entityGuid = "";
     this.showHideFilter();
     this.getAssetList();
@@ -178,14 +182,12 @@ export class AssetsListComponent implements OnInit {
           this.assetsList = response.data.items;
           this.totalRecords = response.data.count;
         } else{
-          this.assetsList = [];
-        this._notificationService.add(new Notification('error', response.message));
+        this.assetsList = [];
         this.totalRecords = 0;
         }
       }
       else {
         this.assetsList = [];
-        this._notificationService.add(new Notification('error', response.message));
         this.totalRecords = 0;
       }
       this.spinner.hide();
@@ -214,6 +216,7 @@ export class AssetsListComponent implements OnInit {
    * @param pageSize
    */
   onPageSizeChangeCallback(pageSize) {
+    this.searchParameters.parentEntityGuid = '';
     this.searchParameters.entityGuid = '';
     this.searchParameters.pageSize = pageSize + 1;
     this.searchParameters.pageNo = 1;
@@ -226,6 +229,7 @@ export class AssetsListComponent implements OnInit {
    * @param pagechangeresponse
    */
   ChangePaginationAsPageChange(pagechangeresponse) {
+    this.searchParameters.parentEntityGuid = '';
     this.searchParameters.entityGuid = '';
     this.searchParameters.pageNo = pagechangeresponse.pageIndex;
     this.searchParameters.pageSize = pagechangeresponse.pageSize;

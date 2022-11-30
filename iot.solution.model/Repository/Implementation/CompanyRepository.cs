@@ -11,6 +11,7 @@ using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
 using LogHandler = component.services.loghandler;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 
 namespace iot.solution.model.Repository.Implementation
 {
@@ -28,7 +29,9 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "CompanyRepository.Manage");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+
+                
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("name", request.Name, DbType.String, ParameterDirection.Input));
@@ -66,7 +69,9 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "CompanyRepository.Manage");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+
+
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("companyGuid", request.Guid, DbType.Guid, ParameterDirection.Input));
@@ -81,7 +86,7 @@ namespace iot.solution.model.Repository.Implementation
                     parameters.Add(sqlDataAccess.CreateParameter("culture", component.helper.SolutionConfiguration.Culture, DbType.String, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("enableDebugInfo", component.helper.SolutionConfiguration.EnableDebugInfo, DbType.String, ParameterDirection.Input));
                     int intResult = sqlDataAccess.ExecuteNonQuery(sqlDataAccess.CreateCommand("[Company_UpdateDetail]", CommandType.StoredProcedure, null), parameters.ToArray());
-                    result.Data = int.Parse(parameters.Where(p => p.ParameterName.Equals("newid")).FirstOrDefault().Value.ToString());
+                    //result.Data = int.Parse(parameters.Where(p => p.ParameterName.Equals("newid")).FirstOrDefault().Value.ToString());
                 }
                 logger.InfoLog(Constants.ACTION_EXIT, "CompanyRepository.Manage");
             }

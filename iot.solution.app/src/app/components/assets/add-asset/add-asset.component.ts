@@ -141,7 +141,7 @@ export class AddAssetComponent implements OnInit {
 
         this.assetGuid = params.assetGuid;
         this.assetObject = {
-          uniqueId: '', specification: '', name: '', deviceTypeName: '', entityGuid: '', parentEntityGuid: '', sensorGuid: '', sensorValue: '', sensorCondition: '',
+          uniqueId: null, specification: '', name: '', deviceTypeName: '', entityGuid: '', parentEntityGuid: '', sensorGuid: '', sensorValue: '', sensorCondition: '',
           templateGuid: '', typeGuid: '', deviceImageFiles: '', deviceMediaFiles: '', deviceAttributes: [new attributeObj()]
         }
 
@@ -151,7 +151,7 @@ export class AddAssetComponent implements OnInit {
       }
       else {
         this.assetObject = {
-          uniqueId: '', specification: '', name: '', deviceTypeName: '', entityGuid: '', parentEntityGuid: '', sensorGuid: '', sensorValue: '', sensorCondition: '',
+          uniqueId: null, specification: '', name: '', deviceTypeName: '', entityGuid: '', parentEntityGuid: '', sensorGuid: '', sensorValue: '', sensorCondition: '',
           templateGuid: '', typeGuid: '', deviceImageFiles: '', deviceMediaFiles: '', deviceAttributes: [new attributeObj()]
         }
       }
@@ -175,7 +175,7 @@ export class AddAssetComponent implements OnInit {
       // extraPlugins: 'divarea',    
       forcePasteAsPlainText: true,
       removeButtons: '',
-      readOnly : this.isView
+      readOnly: this.isView
     };
     this.mediaUrl = this._notificationService.apiBaseUrl;
     let currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -190,7 +190,7 @@ export class AddAssetComponent implements OnInit {
       parentEntityGuid: new FormControl(null),
       imageFiles: new FormControl(''),
       mediaFiles: new FormControl(''),
-      uniqueId: new FormControl({ value: '', disabled: this.isEdit }, Validators.required),
+      uniqueId: new FormControl({ value: null, disabled: this.isEdit }, [Validators.required, Validators.pattern(/^[a-zA-Z0-9]*$/)]),
       name: new FormControl('', Validators.required),
       locationGuid: new FormControl({ value: '', disabled: this.isEdit }, Validators.required),
       entityGuid: new FormControl({ value: '', disabled: this.isEdit }, Validators.required),
@@ -217,7 +217,7 @@ export class AddAssetComponent implements OnInit {
         this.assetObject = response.data;
         this.selectedFilesObj = this.assetObject.deviceMediaFiles;
         this.selectedImagesObj = this.assetObject.deviceImageFiles;
-        
+
         if (this.assetObject.parentEntityGuid) {
           this.getZoneLookup(this.assetObject.parentEntityGuid);
           this.getAssetTypeLookup(this.assetObject.parentEntityGuid);
@@ -305,12 +305,12 @@ export class AddAssetComponent implements OnInit {
    * Get Template Attribute Lookup for Device Type
    * */
   getTemplateAttributeLookup(templateValue) {
-    this.attrForm=new FormGroup({
+    this.attrForm = new FormGroup({
       attrGuid: new FormArray([]),
       attrName: new FormArray([]),
       dispName: new FormArray([]),
     });
-    
+
     this.sensorList = [];
     if (!this.isView && !this.isEdit) {
       this.sensorList = [];
@@ -332,12 +332,12 @@ export class AddAssetComponent implements OnInit {
             this.addAttributes();
           }
           if (this.assetObject && this.assetObject.deviceAttributes) {
-            let sorteddeviceAttributes=[];
+            let sorteddeviceAttributes = [];
             for (let i = 0; i < this.sensorList.length; i++) {
-               let deviceAttribute= this.assetObject.deviceAttributes.find(element=>element.attrName==this.sensorList[i].localName);
-               sorteddeviceAttributes.push(deviceAttribute);
-            } 
-            this.assetObject.deviceAttributes=sorteddeviceAttributes;
+              let deviceAttribute = this.assetObject.deviceAttributes.find(element => element.attrName == this.sensorList[i].localName);
+              sorteddeviceAttributes.push(deviceAttribute);
+            }
+            this.assetObject.deviceAttributes = sorteddeviceAttributes;
           }
         } else {
           this._notificationService.add(new Notification('error', response.message));
@@ -353,7 +353,7 @@ export class AddAssetComponent implements OnInit {
    * Manage asset
    * */
   manageAsset() {
-    let message = "Asset has been added successfully.";
+    let message = "Asset created successfully.";
     this.checkSubmitStatus = true;
     this.assetForm.value.attrbs = [];
 
@@ -366,7 +366,7 @@ export class AddAssetComponent implements OnInit {
       }
       this.assetForm.value.templateGuid = this.templateGuid;
       if (this.isEdit) {
-        message = "Asset has been updated successfully.";
+        message = "Asset updated successfully.";
         this.setAllGuid();
       }
 
@@ -378,7 +378,7 @@ export class AddAssetComponent implements OnInit {
         if (response.isSuccess === true) {
           this.spinner.hide();
           this._notificationService.add(new Notification('success', message));
-          this.router.navigate(['/assetss']);
+          this.router.navigate(['/assets']);
         } else {
           this._notificationService.add(new Notification('error', response.message));
         }
@@ -421,14 +421,81 @@ export class AddAssetComponent implements OnInit {
       let fileType = files.item(x).name.split('.');
       let imagesTypes = ['jpeg', 'JPEG', 'jpg', 'JPG', 'png', 'PNG'];
       if (imagesTypes.indexOf(fileType[fileType.length - 1]) !== -1) {
-        this.fileName.push({ name: files.item(x).name });
-        this.fileToUpload.push(files.item(x));
+
         if (event.target.files && event.target.files[x]) {
           var reader = new FileReader();
           reader.readAsDataURL(event.target.files[x]);
           reader.onload = (innerEvent: any) => {
+
+
             this.fileUrl = innerEvent.target.result;
-            this.selectedImages.push({ url: this.fileUrl, name: files.item(x).name });
+            // this.selectedImages.push({ url: this.fileUrl, name: files.item(x).name });
+
+
+            let img = new Image();
+            img.src = window.URL.createObjectURL(event.target.files[x]);
+            img.onload = () => {
+
+              const width = img.naturalWidth;
+              const height = img.naturalHeight;
+              var stype = event.target.files[x].type.toString();
+              window.URL.revokeObjectURL(img.src);
+
+              if (this.fileToUpload.size > 2000000) {
+                this._notificationService.add(new Notification('info', "Maximum Supported Size: 2 MBs."));
+                this.assetForm.patchValue({
+                  imageFiles: null,
+                });
+                this.myFile.nativeElement.value = "";
+                this.spinner.hide();
+                return;
+              }
+              if (((width * height) > 1048576)) {
+                this._notificationService.add(new Notification('info', "Image dimensions should be min 240*240 and Max 1024*1024."));
+                this.assetForm.patchValue({
+                  imageFiles: null,
+                });
+                this.myFile.nativeElement.value = "";
+                this.spinner.hide();
+                return;
+              }
+              else if ((width * height) < 57600) {
+                this._notificationService.add(new Notification('info', "Image dimensions should be min 240*240 and Max 1024*1024."));
+                this.assetForm.patchValue({
+                  imageFiles: null,
+                });
+                this.myFile.nativeElement.value = "";
+                this.spinner.hide();
+                return;
+              }
+              else {
+                var data = [];
+                data.push("image/jpg");
+                data.push("image/jpeg");
+                data.push("image/png");
+                if (data.includes(stype)) {
+
+                  this.fileName.push({ name: files.item(x).name });
+                  this.fileToUpload.push(files.item(x));
+
+                  // this.assetForm.patchValue({
+                  //   imageFiles: this.fileToUpload,
+                  // });
+                  this.selectedImages.push({ url: this.fileUrl, name: files.item(x).name });
+                }
+                else {
+                  this.assetForm.patchValue({
+                    imageFile: null,
+                  });
+                  this.myFile.nativeElement.value = "";
+                  this.spinner.hide();
+                  return;
+                }
+              }
+
+            }
+
+
           }
         }
       } else {
@@ -534,8 +601,8 @@ export class AddAssetComponent implements OnInit {
   }
 
   /**
-	 * Delete image confirmation popup
-	 * */
+   * Delete image confirmation popup
+   * */
   deleteImgModel(object: any) {
     this.deleteAlertDataModel = {
       title: "Delete Image",
@@ -561,7 +628,7 @@ export class AddAssetComponent implements OnInit {
   * */
   deleteAssetFile(file) {
     this.spinner.show();
-    this.deviceService.deleteFiles(this.assetObject.guid, file.guid).subscribe(response => {
+    this.deviceService.deleteFiles(this.assetObject.guid, 'false', file.guid).subscribe(response => {
       this.spinner.hide();
       if (response.isSuccess == true) {
         // this.selectedFilesObj=this.selectedFilesObj.filter(({ fil }) => fil.guid !== file.guid);
@@ -581,11 +648,11 @@ export class AddAssetComponent implements OnInit {
   }
 
   /**
-	 * Delete location image
-	 * */
+   * Delete location image
+   * */
   deleteAssetImg(image) {
     this.spinner.show();
-    this.deviceService.deleteFiles(this.assetObject.guid, image.guid).subscribe(response => {
+    this.deviceService.deleteFiles(this.assetObject.guid, 'true', image.guid).subscribe(response => {
       this.spinner.hide();
       if (response.isSuccess == true) {
         // this.selectedImagesObj=this.selectedImagesObj.filter(({ img }) => img.guid !== image.guid);
@@ -605,6 +672,6 @@ export class AddAssetComponent implements OnInit {
   }
 
   clickCancel() {
-    this.router.navigate(['assetss']);
+    this.router.navigate(['assets']);
   }
 }

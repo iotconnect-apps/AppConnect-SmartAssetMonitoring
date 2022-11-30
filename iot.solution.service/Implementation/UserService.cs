@@ -13,20 +13,27 @@ using Entity = iot.solution.entity;
 using IOT = IoTConnect.Model;
 using Model = iot.solution.model.Models;
 using LogHandler = component.services.loghandler;
+using Microsoft.Extensions.Configuration;
+using iot.solution.service.AppSetting;
+
 namespace iot.solution.service.Data
 {
     public class UserService : IUserService
     {
 
         private readonly IUserRepository _userRepository;
+        private readonly ICompanyRepository _companyRepository;
         private readonly LogHandler.Logger _logger;
         private readonly IotConnectClient _iotConnectClient;
+        public IConfiguration _configuration { get; set; }
 
-        public UserService(IUserRepository userRepository, LogHandler.Logger logManager)
+        public UserService(IUserRepository userRepository, ICompanyRepository companyRepository, LogHandler.Logger logManager, IConfiguration configuration)
         {
+            _configuration = configuration;
             _logger = logManager;
             _userRepository = userRepository;
-            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, SolutionConfiguration.Configuration.EnvironmentCode, SolutionConfiguration.Configuration.SolutionKey);
+            _companyRepository = companyRepository;
+            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EnvironmentCode.ToString()), ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SolutionKey.ToString()));
         }
         public List<Entity.User> Get()
         {
@@ -78,8 +85,8 @@ namespace iot.solution.service.Data
             {
                 if (request.Id == null || request.Id == Guid.Empty)
                 {
-                     var addUserResult = AsyncHelpers.RunSync<IOT.DataResponse<IOT.AddUserResult>>(() =>
-                       _iotConnectClient.User.Add(Mapper.Configuration.Mapper.Map<IOT.AddUserModel>(request)));
+                    var addUserResult = AsyncHelpers.RunSync<IOT.DataResponse<IOT.AddUserResult>>(() =>
+                      _iotConnectClient.User.Add(Mapper.Configuration.Mapper.Map<IOT.AddUserModel>(request)));
 
                     if (addUserResult != null && addUserResult.status && addUserResult.data != null)
                     {
@@ -135,8 +142,8 @@ namespace iot.solution.service.Data
                         throw new NotFoundCustomException($"{CommonException.Name.NoRecordsFound} : User");
                     }
 
-                     var updateEntityResult = AsyncHelpers.RunSync<IOT.DataResponse<IOT.UpdateUserResult>>(() =>
-                       _iotConnectClient.User.Update(request.Id.ToString(), Mapper.Configuration.Mapper.Map<IOT.UpdateUserModel>(request)));
+                    var updateEntityResult = AsyncHelpers.RunSync<IOT.DataResponse<IOT.UpdateUserResult>>(() =>
+                      _iotConnectClient.User.Update(request.Id.ToString(), Mapper.Configuration.Mapper.Map<IOT.UpdateUserModel>(request)));
 
                     if (updateEntityResult != null && updateEntityResult.status && updateEntityResult.data != null)
                     {
@@ -145,17 +152,17 @@ namespace iot.solution.service.Data
                         //Update Status if user is not modifying his own profile
                         if (request.Id != SolutionConfiguration.CurrentUserId && olddbUserStatus != request.IsActive)
                         {
-                         
-                                var updateStatusEntityResult = AsyncHelpers.RunSync<IOT.DataResponse<IOT.UpdateUserStatusResult>>(() =>
-                               _iotConnectClient.User.UpdateUserStatus(request.Id.ToString(), request.IsActive));
-                                if (updateStatusEntityResult != null && updateStatusEntityResult.status && updateStatusEntityResult.data != null && updateStatusEntityResult.errorMessages.Count > 0)
-                                {
-                                    _logger.ErrorLog(new Exception($"User is not updated in iotconnect, Error: {updateStatusEntityResult.message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+
+                            var updateStatusEntityResult = AsyncHelpers.RunSync<IOT.DataResponse<IOT.UpdateUserStatusResult>>(() =>
+                           _iotConnectClient.User.UpdateUserStatus(request.Id.ToString(), request.IsActive));
+                            if (updateStatusEntityResult != null && updateStatusEntityResult.status && updateStatusEntityResult.data != null && updateStatusEntityResult.errorMessages.Count > 0)
+                            {
+                                _logger.ErrorLog(new Exception($"User is not updated in iotconnect, Error: {updateStatusEntityResult.message}"), this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                                 actionStatus.Success = false;
-                                    actionStatus.Message = new UtilityHelper().IOTResultMessage(updateStatusEntityResult.errorMessages);
-                                    return actionStatus;
-                                }
-                            
+                                actionStatus.Message = new UtilityHelper().IOTResultMessage(updateStatusEntityResult.errorMessages);
+                                return actionStatus;
+                            }
+
                         }
                         else
                         {
@@ -306,7 +313,7 @@ namespace iot.solution.service.Data
             }
             catch (Exception ex)
             {
-                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name); 
+                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
                 return new Entity.ActionStatus(false, ex.Message);
             }
             return result;
@@ -320,10 +327,23 @@ namespace iot.solution.service.Data
                 result.Success = identityResult.status;
                 if (identityResult != null && identityResult.status)
                 {
+                    var subscriptionResult = _iotConnectClient.User.GetQuotaExhaustedNotification(token).Result;
+                    //var res = _userRepository.GetSubscriptionStatus(identityResult.data.data.userGuid);
+                    if (subscriptionResult.data.expiredDate < DateTime.UtcNow)
+                    {
+                        return new Entity.ActionStatus(false, "Subscription expired");
+                    }
                     result.Data = identityResult.data;
-                    //SolutionConfiguration.CurrentUserId = Guid.Parse(identityResult.data.data.userGuid);
-                    //SolutionConfiguration.SolutionId = Guid.Parse(identityResult.data.data.solutionGuid);
-                    //SolutionConfiguration.EntityGuid = Guid.Parse(identityResult.data.data.entityGuid);
+
+                    //IoTConnect.Model.IdentityResult responsedata = identityResult.data;
+                    //if (!string.IsNullOrEmpty(responsedata.data.companyGuid))
+                    //{
+                    //    var company = _companyRepository.GetByUniqueId(r => r.Guid.Equals(Guid.Parse(identityResult.data.data.companyGuid)) && !r.IsDeleted && r.IsActive.HasValue && r.IsActive.Value);
+                    //    if (company == null)
+                    //    {
+                    //        return new Entity.ActionStatus(false, "Company not exists");
+                    //    }
+                    //}
                 }
                 else
                 {

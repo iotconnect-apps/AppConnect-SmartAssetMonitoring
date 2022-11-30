@@ -11,6 +11,7 @@ using System.Linq;
 using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
 using LogHandler = component.services.loghandler;
+using Microsoft.EntityFrameworkCore;
 
 namespace iot.solution.model.Repository.Implementation
 {
@@ -44,7 +45,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceTypeRepository.List");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(SolutionConfiguration.CurrentUserId, request.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("companyGuid", SolutionConfiguration.CompanyId, DbType.Guid, ParameterDirection.Input));                   
@@ -71,7 +72,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceTypeRepository.Manage");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(SolutionConfiguration.CurrentUserId, SolutionConfiguration.Version);
                     if (request.Guid != null && request.Guid != Guid.Empty)
@@ -107,7 +108,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceTypeRepository.Get");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(SolutionConfiguration.CurrentUserId, SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("guid", entityId, DbType.Guid, ParameterDirection.Input));

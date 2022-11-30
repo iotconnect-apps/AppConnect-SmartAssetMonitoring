@@ -287,12 +287,35 @@ ng-scrollbar.dasboard-alert-scroll{
 .gridster-wrapper .dashboard-card.mat-card {
   height: calc(100% - 54px);
 }
+.gridster-wrapper .dashboard-card.mat-card .ng-scroll-view {
+	height: 100% !important;
+}
 .gridster-wrapper .widget-chart-a,.gridster-wrapper .widget-chart-b,.gridster-wrapper .widget-chart-c,.gridster-wrapper .widget-alert-a,.gridster-wrapper .widget-alert-b,.gridster-wrapper .widget-counter-h{
   box-shadow: 1px 0px 8px rgba(4, 54, 116, 0.20) !important;
 }
 .gridster-wrapper gridster-item .panel-heading{
   max-height: 54px !important;
 }
+.gridster-wrapper .widget-reading-left,.gridster-wrapper .widget-reading-right{
+  padding: 2px 8px;
+}
+.gridster-wrapper .widget-reading-left .dashboard-chart p,.gridster-wrapper .widget-reading-right .dashboard-chart p{
+  margin: 3px 0 0 !important;
+}  
+.gridster-wrapper .widget-readings-box{
+  margin-bottom: 5px;
+}
+.gridster-wrapper .widget-counter-f,.gridster-wrapper .widget-counter-g{
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.gridster-wrapper .widget-reading-left p,.gridster-wrapper .widget-reading-right p{
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 115px;
+  text-overflow: ellipsis;
+}
+    
 @media (max-width: 780px){
   .default-system-dashboard gridster-item {
     margin-bottom: 20px !important;

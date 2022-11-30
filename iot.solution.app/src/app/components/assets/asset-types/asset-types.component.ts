@@ -16,7 +16,7 @@ export class AssetTypesComponent implements OnInit {
   deleteAlertDataModel: DeleteAlertDataModel;
   displayedColumns: string[] = ['name', 'make', 'model', 'manufacturer', 'isActive', 'actions'];
   searchParameters = {
-    parentEntityGuid:'',
+    parentEntityGuid: '',
     pageNo: 0,
     pageSize: 10,
     searchText: '',
@@ -62,11 +62,14 @@ export class AssetTypesComponent implements OnInit {
   getAssetTypeList() {
     this.spinner.show();
     this._service.getAssetTypes(this.searchParameters).subscribe(response => {
-
       if (response.isSuccess === true) {
-        if (response.data.count) {
+        if (response.data.count > 0) {
           this.assetTypeList = response.data.items;
           this.totalRecords = response.data.count;
+        }
+        else {
+          this.assetTypeList = [];
+          this.totalRecords = 0;
         }
       }
       else {

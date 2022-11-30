@@ -1,22 +1,23 @@
 <div class="drag-body dashboard-widget">
 	<div class="panel-heading" [ngStyle]="{'background':widget?.widgetProperty?.background}">
-		<h5 class="panel-title"
-		[ngStyle]="{'font-size':widget?.widgetProperty?.fontSize+'px',
+		<h5 class="panel-title" [ngStyle]="{'font-size':widget?.widgetProperty?.fontSize+'px',
 		'font-family':widget?.widgetProperty?.fontFamily,
 		'color':widget?.widgetProperty?.fontColor}"> {{widget?.widgetProperty?.title}} </h5>
 	</div>
 	<mat-card class="dashboard-card mat-card">
-		<ng-scrollbar class="my-scrollbar m-b-50" trackX="false" trackY="true" autohide="false" [compact]="true" >
-			<ul *ngIf="maintenanceList.length > 0" class="maintenance-card-list ">
+		<ng-scrollbar class="my-scrollbar" trackX="false" trackY="true" autohide="false" [compact]="true">
+
+			<ul *ngIf="maintenanceList.length > 0" class="maintenance-card-list " [ngStyle]="{'width' : '98%', 'dispay':'none'}">
 				<li *ngFor="let list of maintenanceList">
 					<span class="maintain-name">{{list['deviceName']}} - {{list['entityName']}}</span>
 					<span class="maintain-details">{{list['description']}}</span>
 					<div class="maintenance-date text-right">
-						<span>{{list['startDateTime'] | date}}</span>
+						<span>{{getLocalDate(list['startDateTime'])}}</span>
 					</div>
 				</li>
 			</ul>
-			<ul *ngIf="maintenanceList.length == 0" class="alerts-dashboard d-flex align-items-center justify-content-center">
+			<ul *ngIf="maintenanceList.length == 0"
+				class="alerts-dashboard d-flex align-items-center justify-content-center h-100">
 				<div class="centerclass">No records found</div>
 			</ul>
 		</ng-scrollbar>

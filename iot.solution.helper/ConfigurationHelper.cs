@@ -30,6 +30,7 @@ namespace component.helper
         public static char EnableDebugInfo { get { return '0'; } }
         public static string Version { get; set; } = "v1";
         public static string UploadBasePath { get; set; } = "wwwroot/";
+        public static string EmailTemplatePath { get; set; } = "EmailTemplate/";
         public static bool isTitleCase { get; set; } = true;
         public static string CompanyFilePath { get; set; } = "CompanyFiles/EntityImages/";
         public static string ProductFilePath { get; set; } = "CompanyFiles/ProductImages/";
@@ -41,71 +42,7 @@ namespace component.helper
     public class Configuration
     {
         public string ConnectionString { get; set; }
-        public string SolutionName { get; set; }
-        public string SolutionKey { get; set; }
-        public string EnvironmentCode { get; set; }
-        public SubscriptionAPISetting SubscriptionAPI { get; set; }
-        public Messaging Messaging { get; set; }
-        public TokenSetting Token { get; set; }
-        public LoggerSetting Logger { get; set; }
-        public HangFireSetting HangFire { get; set; }
-        public List<IOTConnectSetting> IOTConnectSettings { get; set; }
+        
     }
-
-    public class IOTConnectSetting
-    {
-        public string SettingType { get; set; }
-        public string Host { get; set; }
-        public int IsSecure { get; set; }
-        public string Password { get; set; }
-        public int Port { get; set; }
-        public string Url { get; set; }
-        public string User { get; set; }
-        public string Vhost { get; set; }
-    }
-
-    public class SubscriptionAPISetting
-    {
-        public string BaseUrl { get; set; }
-        public string ClientID { get; set; }
-        public string ClientSecret { get; set; }
-        public string SolutionCode { get; set; }
-        public string UserName { get; set; }
-        public string StripeAPIKey { get; set; }
-    }
-
-    public class Messaging
-    {
-        public string ServicebusEndPoint { get; set; }
-        public string TopicName { get; set; }
-        public string SubscriptionName { get; set; }
-       
-    }
-
-    public class TokenSetting
-    {
-        public string Issuer { get; set; }
-        public string Audience { get; set; }
-        public string SecurityKey { get; set; }
-        public string Authority { get; set; }
-        public string ApiName { get; set; }
-        public string ApiSecret { get; set; }
-        public bool EnableCaching { get; set; }
-        public int CacheDurationMinutes { get; set; }
-        public bool RequireHttpsMetadata { get; set; }
-        public string OAuthClientID { get; set; }
-        public string OAuthRealm { get; set; }
-    }
-
-    public class LoggerSetting
-    {
-        public string BrokerConnection { get; set; }
-        public string SolutionName { get; set; }
-    }
-    public class HangFireSetting
-    {
-        public bool Enabled { get; set; }
-        public int TelemetryHours { get; set; }
-        public int ShelfConsumptionMinutes { get; set; }
-    }
+    
 }

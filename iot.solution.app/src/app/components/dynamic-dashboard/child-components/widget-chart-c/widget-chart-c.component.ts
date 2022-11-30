@@ -127,28 +127,6 @@ export class WidgetChartCComponent implements OnInit,OnDestroy {
 				}else{
 					this.noRecordFoundInUsageByAssetType=false;
 					let data = [];
-					response.data = [
-						{
-							color: "yellow",
-							name: "testType",
-							utilizationPer: "23"
-						},
-						{
-							color: "red",
-							name: "testType1",
-							utilizationPer: "50"
-						},
-						{
-							color: "gray",
-							name: "testType2",
-							utilizationPer: "7"
-						},
-						{
-							color: "green",
-							name: "testType3",
-							utilizationPer: "20"
-						}
-					]
 					if (response.data.length) {
 						data.push(['Task', 'Hours per Day']);
 						response.data.forEach(element => {

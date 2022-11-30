@@ -1,4 +1,6 @@
-﻿namespace iot.solution.entity
+﻿using System;
+
+namespace iot.solution.entity
 {
     public class BaseRequest
     {
@@ -29,6 +31,18 @@
         public string SearchText { get; set; }       
         public string parentEntityGuid { get; set; }
         public string entityGuid { get; set; }
+    }
+    public class DeviceMaintenanceListRequest 
+    {
+        public string searchText { get; set; } = "";
+        public int? pageNo { get; set; } = 1;
+        public int? pageSize { get; set; } = 10;
+        public string orderBy { get; set; } = "";
+        public string deviceId { get; set; } = "";
+        public string entityGuid { get; set; } = "";
+        public string parentEntityGuid { get; set; } = "";
+        public DateTime? currentDate { get; set; } = null;
+        public string timeZone { get; set; } = "";
     }
     public class SearchResult<T>
     {

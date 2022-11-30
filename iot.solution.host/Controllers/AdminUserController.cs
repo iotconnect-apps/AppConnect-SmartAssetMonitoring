@@ -13,6 +13,7 @@ using Entity = iot.solution.entity;
 using Response = iot.solution.entity.Response;
 using AutoMapper.Configuration;
 using host.iot.solution.Filter;
+using System.Web;
 //using component.common.model;
 namespace iot.solution.host.Controllers
 {
@@ -36,7 +37,7 @@ namespace iot.solution.host.Controllers
             Entity.BaseResponse<Entity.SearchResult<List<Entity.UserResponse>>> response = new Entity.BaseResponse<Entity.SearchResult<List<Entity.UserResponse>>>();
             var searchRequest = new SearchRequest()
             {
-                SearchText = searchText,
+                SearchText = HttpUtility.UrlDecode(searchText),
                 //CompanyId = "895019CF-1D3E-420C-828F-8971253E5784",
                 CompanyId = Convert.ToString(component.helper.SolutionConfiguration.CompanyId),
                 PageNumber = pageNo.Value,

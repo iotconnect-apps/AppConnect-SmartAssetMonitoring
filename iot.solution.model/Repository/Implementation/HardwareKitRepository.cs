@@ -11,6 +11,8 @@ using System.Xml.Serialization;
 using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
 using LogHandler = component.services.loghandler;
+using Microsoft.EntityFrameworkCore;
+
 namespace iot.solution.model.Repository.Implementation
 {
     public class HardwareKitRepository : GenericRepository<Model.HardwareKit>, IHardwareKitRepository
@@ -24,7 +26,7 @@ namespace iot.solution.model.Repository.Implementation
 
         public List<LookupItem> GetKitTypeLookup()
         {
-            using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+            using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
             {
                 return sqlDataAccess.QueryList<Entity.LookupItem>("SELECT CONVERT(NVARCHAR(50),[Guid]) AS [Value], [name] AS [Text] FROM [KitType] WHERE [isActive] = 1 AND [isDeleted] = 0");
             }
@@ -36,7 +38,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "HardwareKitRepository.Get");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, request.Version);
                     if(!string.IsNullOrEmpty(companyId))
@@ -76,7 +78,7 @@ namespace iot.solution.model.Repository.Implementation
                     xmlData = stringwriter.ToString();
                 }
 
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     
                     List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
@@ -131,7 +133,7 @@ namespace iot.solution.model.Repository.Implementation
                     xmlData = stringwriter.ToString();
                 }
 
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("data", xmlData.ToString(), DbType.Xml, ParameterDirection.Input));
@@ -206,7 +208,7 @@ namespace iot.solution.model.Repository.Implementation
                 XDocument requestXML = XDocument.Parse(stringResult);
                 requestXML = new XDocument(new XElement("HardwareKits", requestXML.Root));
 
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("data", requestXML.ToString(), DbType.Xml, ParameterDirection.Input));

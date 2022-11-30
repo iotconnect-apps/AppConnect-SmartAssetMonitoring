@@ -16,7 +16,7 @@
     <ModelCollation>1033,CI</ModelCollation>
     <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
     <DeployToDatabase>True</DeployToDatabase>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <TargetLanguage>CS</TargetLanguage>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <SqlServerVerification>False</SqlServerVerification>
@@ -24,6 +24,7 @@
     <TargetDatabaseSet>True</TargetDatabaseSet>
     <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
     <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -158,6 +159,45 @@
     <Build Include="dbo\Stored Procedures\Chart_Utilization.sql" />
     <Build Include="dbo\Tables\UserDasboardWidget.sql" />
     <Build Include="dbo\Tables\MasterWidget.sql" />
+    <Build Include="dbo\Tables\EntityType.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\Media.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\MediaDetail.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\MediaSize.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\MediaTag.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\MediaTagDetail.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\AppSetting.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\Document.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\DocumentShare.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\DocumentTag.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\DocumentTagDetail.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\DocumentType.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
+    <Build Include="dbo\Tables\DocumentVersion.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Build>
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="iot.solution.database.refactorlog" />

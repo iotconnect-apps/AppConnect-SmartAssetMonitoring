@@ -40,7 +40,7 @@ export class WidgetAlertBComponent implements OnInit {
     	let timezone = moment().utcOffset();
 		this.spinner.show();
 		this.deviceService.getdevicemaintenance(currentdatetime, timezone).subscribe(response => {
-			this.spinner.hide();
+      this.spinner.hide();
 			if (response.isSuccess === true && response.data) {
 				this.maintenanceList = response.data;
 			}
@@ -56,6 +56,13 @@ export class WidgetAlertBComponent implements OnInit {
 			this._notificationService.handleResponse(error,"error");
 		});
 	}
+
+  getLocalDate(lDate) {
+    var utcDate = moment.utc(lDate, 'YYYY-MM-DDTHH:mm:ss.SSS');
+    var localDate = moment(utcDate).local();
+    let res = moment(localDate).format('MMM DD, YYYY hh:mm:ss A');
+    return res;
+  }
 
 	ngOnDestroy() {
 		this.resizeSub.unsubscribe();

@@ -8,6 +8,7 @@ import { tap } from 'rxjs/operators';
 import { AppConstant, DeleteAlertDataModel } from "../../../../app.constants";
 import { Notification, NotificationService } from 'app/services';
 import { empty } from 'rxjs';
+import { CommonService } from 'app/services/common/common.service';
 
 @Component({
   selector: 'app-adminuser-list',
@@ -46,7 +47,8 @@ export class UserAdminListComponent implements OnInit {
     private router: Router,
     private userService: UserService,
     public _appConstant: AppConstant,
-    private _notificationService: NotificationService
+    private _notificationService: NotificationService,
+    private commonService: CommonService
   ) { }
 
   ngOnInit() {
@@ -110,7 +112,7 @@ export class UserAdminListComponent implements OnInit {
    * @param filterText
    */
   searchTextCallback(filterText) {
-    this.searchParameters.searchText = filterText;
+    this.searchParameters.searchText = this.commonService.getEncodedValue(filterText);
     this.searchParameters.pageNumber = 0;
     this.getUserList();
     this.isSearch = true;
@@ -230,7 +232,6 @@ export class UserAdminListComponent implements OnInit {
    * @param isActive
    */
   changeUserStatus(id, isActive) {
-
     this.spinner.show();
     this.userService.adminchangeStatus(id, isActive).subscribe(response => {
       this.spinner.hide();

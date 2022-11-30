@@ -16,7 +16,6 @@ namespace iot.solution.model.Repository.Implementation
     {
         public GenericRepository(IUnitOfWork unitOfWork, LogHandler.Logger logManager)
         {
-            ConnectionString = component.helper.SolutionConfiguration.Configuration.ConnectionString;
 
             if (unitOfWork == null)
                 throw new ArgumentNullException("UnitOfWork cannot be null.");
@@ -34,8 +33,6 @@ namespace iot.solution.model.Repository.Implementation
                 return _entities;
             }
         }
-
-        public string ConnectionString { get; }
 
         public virtual void SetModified<K>(K entity) where K : class
         {
@@ -320,7 +317,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 _logger.InfoLog(Constants.ACTION_ENTRY, null, "", "", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<System.Data.Common.DbParameter> dbparameters = new List<System.Data.Common.DbParameter>();
                     if (parameters != null && parameters.Any())
@@ -349,7 +346,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 _logger.InfoLog(Constants.ACTION_ENTRY, null, "", "", this.GetType().Name, MethodBase.GetCurrentMethod().Name);
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<System.Data.Common.DbParameter> dbparameters = new List<System.Data.Common.DbParameter>();
                     if (parameters != null && parameters.Any())

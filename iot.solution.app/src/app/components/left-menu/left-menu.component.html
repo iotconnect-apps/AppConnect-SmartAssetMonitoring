@@ -12,7 +12,7 @@
     [compact]="false">
     <ul class="sidebar-menu">
       <li *ngFor="let menu of menuList let i = index" class="with-sub" routerLinkActive="active"
-          class="menu.li_color" (click)="onClickMenu(i)" appTooltip="{{menu.name}}" placement="right" delay="200">
+          class="menu.li_color" (click)="onClickMenu(i)" appTooltip="{{menu.name}}" placement="right" delay="200" [routerLink]="[menu.link]">
         <i class="icon-sidebar" [ngClass]="menu.icon" [routerLink]="[menu.link]" *ngIf="menu.applylink"></i>
         <a (click)="manageNavigateUrl(menu.link)" *ngIf="menu.applylink" title="{{menu.name}}">
           <span>{{menu.name}}</span>

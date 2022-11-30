@@ -40,7 +40,7 @@ export class SubscriberDetailComponent implements OnInit {
     private router: Router
   ) {
     this.activatedRoute.params.subscribe(params => {
-      if (params.email) {
+      if (params.consumerId) {
         this.params = params
       }
       if (params.companyId) {

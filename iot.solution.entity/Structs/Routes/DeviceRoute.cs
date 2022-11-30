@@ -15,7 +15,7 @@ namespace iot.solution.entity.Structs.Routes
             public const string DeleteImage = "device.deletedeviceimage";
             public const string DeleteMediaFile = "device.deletemediafile";
             public const string BySearch = "device.search";
-         
+
             public const string UpdateStatus = "device.updatestatus";
             public const string FileUpload = "device.fileupload";
             public const string ValidateKit = "device.validatekit";
@@ -34,10 +34,10 @@ namespace iot.solution.entity.Structs.Routes
             public const string GetById = "{id}";
             public const string Delete = "delete";
             public const string DeleteImage = "deleteimage/{id}";
-            public const string DeleteMediaFile = "deletemediafile/{deviceId}/{fileId?}";
+            public const string DeleteMediaFile = "deletemediafile/{isImage}/{deviceId}/{fileId?}";
             public const string UpdateStatus = "updatestatus";
             public const string BySearch = "search";
-         
+
             public const string FileUpload = "fileupload/{deviceId}";
             public const string ValidateKit = "validatekit/{kitCode}";
             public const string ProvisionKit = "provisionkit";

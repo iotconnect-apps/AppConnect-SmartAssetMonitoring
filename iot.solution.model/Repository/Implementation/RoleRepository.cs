@@ -10,6 +10,8 @@ using System.Linq;
 using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
 using LogHandler = component.services.loghandler;
+using Microsoft.EntityFrameworkCore;
+
 namespace iot.solution.model.Repository.Implementation
 {
     public class RoleRepository : GenericRepository<Model.Role>, IRoleRepository
@@ -28,7 +30,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "RoleRepository.Get");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, request.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("companyguid", component.helper.SolutionConfiguration.CompanyId, DbType.Guid, ParameterDirection.Input));
@@ -69,16 +71,16 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "RoleRepository.Manage");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
-                    if(request.Guid!=null && request.Guid!=Guid.Empty)
+                    if (request.Guid != null && request.Guid != Guid.Empty)
                         parameters.Add(sqlDataAccess.CreateParameter("guid", request.Guid, DbType.Guid, ParameterDirection.Input));
-                    parameters.Add(sqlDataAccess.CreateParameter("companyGuid", request.CompanyGuid, DbType.Guid, ParameterDirection.Input));                   
+                    parameters.Add(sqlDataAccess.CreateParameter("companyGuid", request.CompanyGuid, DbType.Guid, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("name", request.Name, DbType.String, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("description", request.Description, DbType.String, ParameterDirection.Input));
-                    parameters.Add(sqlDataAccess.CreateParameter("isAdminRole", request.IsAdminRole, DbType.Boolean, ParameterDirection.Input));                    
-                    parameters.Add(sqlDataAccess.CreateParameter("newid",request.Guid, DbType.Guid, ParameterDirection.Output));
+                    parameters.Add(sqlDataAccess.CreateParameter("isAdminRole", request.IsAdminRole, DbType.Boolean, ParameterDirection.Input));
+                    parameters.Add(sqlDataAccess.CreateParameter("newid", request.Guid, DbType.Guid, ParameterDirection.Output));
                     parameters.Add(sqlDataAccess.CreateParameter("culture", component.helper.SolutionConfiguration.Culture, DbType.String, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("enableDebugInfo", component.helper.SolutionConfiguration.EnableDebugInfo, DbType.String, ParameterDirection.Input));
                     int intResult = sqlDataAccess.ExecuteNonQuery(sqlDataAccess.CreateCommand("[Role_AddUpdate]", CommandType.StoredProcedure, null), parameters.ToArray());
@@ -92,5 +94,8 @@ namespace iot.solution.model.Repository.Implementation
             }
             return result;
         }
+
+
+
     }
 }

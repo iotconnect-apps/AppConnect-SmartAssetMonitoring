@@ -9,7 +9,7 @@ export function getClientSettings(): UserManagerSettings {
     authority: ApiConfigService.settings.IdsServer.IDSAuthority,
     client_id: ApiConfigService.settings.IdsServer.IDSClientID,
     redirect_uri: ApiConfigService.settings.IdsServer.webUrl + '/callback',
-    post_logout_redirect_uri: ApiConfigService.settings.IdsServer.webUrl + '/login',
+    post_logout_redirect_uri: ApiConfigService.settings.IdsServer.webUrl,
     response_type: 'id_token token',
     scope: ApiConfigService.settings.IdsServer.IDSScope,
     filterProtocolClaims: true,

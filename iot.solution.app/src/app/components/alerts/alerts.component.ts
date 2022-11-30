@@ -98,6 +98,7 @@ export class AlertsComponent implements OnInit {
   filterAlerts(){
     this.checkSubmitStatus=true;
     if (this.filterForm.valid) {
+      this.searchParameters.pageNo = 0;
       this.getAlertList();      
     }
   }
@@ -110,6 +111,7 @@ export class AlertsComponent implements OnInit {
     this.checkSubmitStatus=false;
     this.searchParameters.parentEntityGuid="";
     this.searchParameters.entityGuid="";
+    this.searchParameters.pageNo = 0;
     this.getAlertList();
     this.showHideFilter();
   }

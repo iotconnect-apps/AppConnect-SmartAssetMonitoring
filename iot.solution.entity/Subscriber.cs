@@ -24,6 +24,7 @@ namespace iot.solution.entity
         public bool isCompanyCreatedWithoutPlan { get; set; }
         public string companyName { get; set; }
         public string ioTConnectCompanyGuid { get; set; }
+        public string consumerId { get; set; }
     }
 
     public class SubscriberParameter

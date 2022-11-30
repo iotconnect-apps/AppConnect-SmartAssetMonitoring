@@ -193,4 +193,163 @@ namespace iot.solution.common
         [Description("C0x008")]
         ThirdPartyServiceTokenNull = 8,
     }
+
+    public enum AppSettingKey
+    {
+
+        [Description("SolutionKey")]
+        SolutionKey,
+
+        [Description("EnvironmentCode")]
+        EnvironmentCode,
+
+        [Description("SubscriptionBaseUrl")]
+        SubscriptionBaseUrl,
+
+        [Description("SubscriptionClientID")]
+        SubscriptionClientID,
+
+        [Description("SubscriptionClientSecret")]
+        SubscriptionClientSecret,
+
+        [Description("SubscriptionSolutionCode")]
+        SubscriptionSolutionCode,
+
+        [Description("SubscriptionSolutionId")]
+        SubscriptionSolutionId,
+
+        [Description("SubscriptionUserName")]
+        SubscriptionUserName,
+
+        [Description("MessagingServicebusEndPoint")]
+        MessagingServicebusEndPoint,
+
+        [Description("MessagingTopicName")]
+        MessagingTopicName,
+
+        [Description("MessagingSubscriptionName")]
+        MessagingSubscriptionName,
+
+        [Description("TokenIssuer")]
+        TokenIssuer,
+
+        [Description("TokenAudience")]
+        TokenAudience,
+
+        [Description("TokenSecurityKey")]
+        TokenSecurityKey,
+
+        [Description("TokenAuthority")]
+        TokenAuthority,
+
+        [Description("TokenApiName")]
+        TokenApiName,
+
+        [Description("TokenApiSecret")]
+        TokenApiSecret,
+
+        [Description("TokenEnableCaching")]
+        TokenEnableCaching,
+
+        [Description("TokenCacheDurationMinutes")]
+        TokenCacheDurationMinutes,
+
+        [Description("TokenRequireHttpsMetadata")]
+        TokenRequireHttpsMetadata,
+
+        [Description("LoggerBrokerConnection")]
+        LoggerBrokerConnection,
+
+        [Description("LoggerSolutionName")]
+        LoggerSolutionName,
+
+        [Description("HangFireEnabled")]
+        HangFireEnabled,
+
+        [Description("HangFireTelemetryHours")]
+        HangFireTelemetryHours,
+
+        [Description("SmtpHost")]
+        SmtpHost,
+
+        [Description("SmtpPort")]
+        SmtpPort,
+
+        [Description("SmtpUserName")]
+        SmtpUserName,
+
+        [Description("SmtpFromMail")]
+        SmtpFromMail,
+
+        [Description("SmtpFromDisplayName")]
+        SmtpFromDisplayName,
+
+        [Description("SmtpPassword")]
+        SmtpPassword,
+
+        [Description("SmtpRegards")]
+        SmtpRegards,
+
+        [Description("EmailTemplateCompanyRegistrationSubject")]
+        EmailTemplateCompanyRegistrationSubject,
+
+        [Description("EmailTemplateCompanyUserList")]
+        EmailTemplateCompanyUserList,
+
+        [Description("EmailTemplateCompanyAdminUserList")]
+        EmailTemplateCompanyAdminUserList,
+
+        [Description("EmailTemplateSubscriptionExpirySubject")]
+        EmailTemplateSubscriptionExpirySubject,
+
+        [Description("EmailTemplateSubscriptionExpiryUserList")]
+        EmailTemplateSubscriptionExpiryUserList,
+
+        [Description("PortalUrl")]
+        PortalUrl,
+
+        [Description("EmailTemplateMailSolutionName")]
+        EmailTemplateMailSolutionName,
+
+        [Description("MediaAzureConnectionString")]
+        MediaAzureConnectionString,
+
+        [Description("MediaTimeoutMinutes")]
+        MediaTimeoutMinutes,
+
+        [Description("MediaBlobContainerName")]
+        MediaBlobContainerName,
+
+        [Description("AzureFun_GenerateImageURL")]
+        AzureFun_GenerateImageURL,
+
+        [Description("AzureFun_DeleteImageURL")]
+        AzureFun_DeleteImageURL,
+
+    }
+
+
+    public enum MediaSize
+    {
+        Default = 1,
+        Small = 2,
+        Medium = 4,
+        Large = 8,
+        ExtraLarge = 16
+    }
+
+
+    public enum EntityTypeEnum
+    {
+        Location = 1,
+        Zone = 2,
+        Asset = 3,
+    }
+
+
+    public enum DocumentTypeEnum
+    {
+        AssetMedia = 1
+    }
+
 }

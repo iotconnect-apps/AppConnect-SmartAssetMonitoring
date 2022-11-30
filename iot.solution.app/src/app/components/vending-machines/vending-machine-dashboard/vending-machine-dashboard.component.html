@@ -54,10 +54,10 @@
 
           <mat-tab-group animationDuration="0ms" (selectedTabChange)="inventorychange($event)">
             <mat-tab label="Inventory">
-              <div class="chart-data">
+              <div class="chart-data h-100">
                 <google-chart *ngIf="columnChartinvent.dataTable.length" [data]="columnChartinvent"></google-chart>
                 <div *ngIf="!columnChartinvent.dataTable.length"
-                class="text-center d-flex align-items-center justify-content-center" style="height: 300px;">
+                class="text-center d-flex align-items-center justify-content-center h-100" style="height: 300px;">
              No data found
            </div>
               </div>
@@ -161,10 +161,10 @@
           </div>
         </div>
         <mat-card class="dashboard-card">
-          <div class="chart-data">
+          <div class="chart-data h-100">
             <google-chart *ngIf="columnChart.dataTable.length" [data]="columnChart"></google-chart>
             <div *ngIf="!columnChart.dataTable.length"
-            class="text-center d-flex align-items-center justify-content-center" style="height: 300px;">
+            class="text-center d-flex align-items-center justify-content-center h-100" style="height: 300px;">
          No data found
        </div>
           </div>
@@ -191,10 +191,10 @@
           <div class="chart-data">
             <mat-tab-group animationDuration="0ms" (selectedTabChange)="onTabChange($event)">
               <mat-tab label="{{sens.text | uppercase}}" *ngFor="let sens of sensdata">
-                <div class="chart-data">
+                <div class="chart-data h-100">
                   <google-chart *ngIf="columnChartattribute.dataTable.length" [data]="columnChartattribute"></google-chart>
                   <div *ngIf="!columnChartattribute.dataTable.length"
-                  class="text-center d-flex align-items-center justify-content-center" style="height: 300px;">
+                  class="text-center d-flex align-items-center justify-content-center h-100" style="height: 300px;">
                No data found
              </div>
                 </div>

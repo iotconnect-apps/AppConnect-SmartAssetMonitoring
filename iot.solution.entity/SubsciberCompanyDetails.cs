@@ -35,5 +35,18 @@ namespace iot.solution.entity
         public int planNoOfMessages { get; set; }
         public double planPerDayMessages { get; set; }
         public object subFeaturesConsumptionDatas { get; set; }
-    }    
+    }
+    public class CompanyUserDetails
+    {
+        public string companyName { get; set; }
+        public string role { get; set; }
+        public bool isExist { get; set; }
+        public string errorMessage { get; set; }
+    }
+    public class ValidateUserRequest
+    {
+        public string solutionId { get; set; }
+        public string email { get; set; }
+        public string companyName { get; set; }
+    }
 }

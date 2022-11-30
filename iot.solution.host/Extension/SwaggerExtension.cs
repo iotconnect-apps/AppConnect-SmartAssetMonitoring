@@ -76,7 +76,7 @@ namespace iot.solution.host
 
     public class ExplictObsoleteRoutes : IOperationFilter
     {
-        private string[] solutionKeyHeaderRequiredPaths = { "/account/refreshtoken", "/subscriber", "/account/login", "/account/adminlogin", "/alert/addiotalert" };
+        private string[] solutionKeyHeaderRequiredPaths = { "/account/refreshtoken", "/subscriber", "/account/login", "/account/adminlogin", "/alert/addiotalert", "/chart/executecron" };
 
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {

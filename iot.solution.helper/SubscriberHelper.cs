@@ -12,6 +12,7 @@ using System.Net.Http;
 using System.Net;
 using System.Linq;
 using Newtonsoft.Json;
+using IoTConnect.Model;
 
 namespace component.helper
 {
@@ -19,15 +20,23 @@ namespace component.helper
     {
         private readonly IHttpClientHelper _httpClientHelper;
         private static string _subcriptionAccessToken;
-        
+
         private readonly LogHandler.Logger _logger;
         private readonly string apiBaseURL = String.Empty;
-        
-        public SubscriberHelper(LogHandler.Logger logger)
+        private readonly string ClientID = String.Empty;
+        private readonly string ClientSecret = String.Empty;
+        private readonly string UserName = String.Empty;
+        private readonly string solutionId = String.Empty;
+
+        public SubscriberHelper(LogHandler.Logger logger, string subscriptionBaseUrl, string subscriptionClientID, string subscriptionClientSecret, string subscriptionUserName, string subscriptionSolutionId)
         {
             _logger = logger;
             _httpClientHelper = new HttpClientHelper(logger);
-            apiBaseURL = SolutionConfiguration.Configuration.SubscriptionAPI.BaseUrl;
+            apiBaseURL = subscriptionBaseUrl;
+            ClientID = subscriptionClientID;
+            ClientSecret = subscriptionClientSecret;
+            UserName = subscriptionUserName;
+            solutionId = subscriptionSolutionId;
             InitSubscriptionToken();
         }
         public bool ValidateSubscriptionAccessToken()
@@ -59,9 +68,9 @@ namespace component.helper
                 {
                     Entity.TokenRequest request = new Entity.TokenRequest
                     {
-                        ClientID = SolutionConfiguration.Configuration.SubscriptionAPI.ClientID,
-                        ClientSecret = SolutionConfiguration.Configuration.SubscriptionAPI.ClientSecret,
-                        UserName = SolutionConfiguration.Configuration.SubscriptionAPI.UserName
+                        ClientID = ClientID,
+                        ClientSecret = ClientSecret,
+                        UserName = UserName
                     };
                     Entity.TokenResponse response = new Entity.TokenResponse();
                     response = _httpClientHelper.Post<Entity.TokenRequest, Entity.TokenResponse>(apiBaseURL + "subscription/token", request);
@@ -89,7 +98,7 @@ namespace component.helper
         }
         public Response.CountryResponse GetCountryData()
         {
-            Response.CountryResponse result= new Response.CountryResponse();
+            Response.CountryResponse result = new Response.CountryResponse();
             try
             {
                 result = _httpClientHelper.Get<Response.CountryResponse>(apiBaseURL + "country?pageNo=1&pageSize=1000", _subcriptionAccessToken);
@@ -148,14 +157,15 @@ namespace component.helper
             bool IsEmailExists = false;
             if (!string.IsNullOrEmpty(requestData.Email))
             {
-                Entity.SubsciberCompanyDetails existingConsumer = GetSubscriberDetails(SolutionConfiguration.Configuration.SubscriptionAPI.SolutionCode, requestData.Email);
-                if (existingConsumer != null && string.IsNullOrEmpty(existingConsumer.email))//Check email exists or not
+                Entity.CompanyUserDetails existingConsumer = GetCompanyUserDetails(requestData.CompanyName, solutionId, requestData.Email);
+                if (existingConsumer != null && existingConsumer.isExist)//Check email exists or not
                 {
-                    IsEmailExists = false;
+                    IsEmailExists = true;
+                    response.Message = existingConsumer.errorMessage;
                 }
                 else
                 {
-                    IsEmailExists = true;
+                    IsEmailExists = false;
                 }
             }
             //if (!string.IsNullOrEmpty(requestData.CompanyName))
@@ -172,7 +182,6 @@ namespace component.helper
             if (IsEmailExists)
             {
                 response.IsSuccess = false;
-                response.Message = "Email address already registered!";
             }
             //else if (IsCompanyExists)
             //{
@@ -191,15 +200,59 @@ namespace component.helper
             }
             return response;
         }
+        private Entity.CompanyUserDetails GetCompanyUserDetails(string companyName, string solutionCode, string userEmail)
+        {
+            Entity.CompanyUserDetails result = new Entity.CompanyUserDetails();
+            try
+            {
+
+                Entity.ValidateUserRequest request = new Entity.ValidateUserRequest
+                {
+                    solutionId = solutionCode,
+                    email = userEmail,
+                    companyName = companyName
+                };
+
+                using (var response = _httpClientHelper.PUT<Entity.ValidateUserRequest>(string.Concat(apiBaseURL, "company/user/exist"), request, _subcriptionAccessToken))
+                {
+                    if ((int)response.StatusCode == (int)HttpStatusCode.OK)
+                    {
+                        result = JsonConvert.DeserializeObject<Entity.CompanyUserDetails>(response.Content.ReadAsStringAsync().Result);
+                    }
+                    else
+                    {
+                        List<Entity.ErrorMessageResponse> errorMessage = JsonConvert.DeserializeObject<List<Entity.ErrorMessageResponse>>(response.Content.ReadAsStringAsync().Result);
+                        if (errorMessage != null && errorMessage.Any())
+                        {
+                            throw new Exception(string.Format("{0}", errorMessage.FirstOrDefault().msg));
+                        }
+                        else
+                        {
+                            throw new Exception("Please try again. Something went wrong!!!");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorLog(ex, this.GetType().Name, MethodBase.GetCurrentMethod().Name);
+            }
+            return result;
+        }
         public Entity.SaveCompanyResponse CreateCompany(Entity.SaveCompanyRequest requestData)
         {
             InitSubscriptionToken();
-            Entity.SubsciberCompanyDetails existingConsumer = GetSubscriberDetails(requestData.SolutionCode, requestData.User.Email);
-            if (existingConsumer != null && string.IsNullOrEmpty(existingConsumer.email))//Check email exists or not
+            Entity.CompanyUserDetails existingConsumer = GetCompanyUserDetails(requestData.User.CompanyName, solutionId, requestData.User.Email);
+            if (existingConsumer != null && existingConsumer.isExist)//Check email exists or not
             {
+                throw new Exception(existingConsumer.errorMessage);
+            }
+            else
+            {
+                requestData.SolutionCode = solutionId;
                 using (var response = _httpClientHelper.Post<Entity.SaveCompanyRequest>(string.Concat(apiBaseURL, "solution/company"), requestData, _subcriptionAccessToken))
                 {
-                    if ((int)response.StatusCode == (int)HttpStatusCode.OK)
+                    if ((int)response.StatusCode == (int)HttpStatusCode.Created)
                     {
                         return JsonConvert.DeserializeObject<Entity.SaveCompanyResponse>(response.Content.ReadAsStringAsync().Result);
                     }
@@ -216,10 +269,6 @@ namespace component.helper
                         }
                     }
                 }
-            }
-            else
-            {
-                throw new Exception("Email address already registered. Try with another email!!!");
             }
         }
         public Response.SubscriptionPlanResponse GetSubscriptionPlans(string solutionID)
@@ -251,12 +300,12 @@ namespace component.helper
             }
             return result;
         }
-        public Entity.SubsciberCompanyDetails GetSubscriberDetails(string solutionCode, string userEmail)
+        public Entity.SubsciberCompanyDetails GetSubscriberDetails(string solutionCode, Guid consumerId)
         {
             Entity.SubsciberCompanyDetails result = new Entity.SubsciberCompanyDetails();
             try
             {
-                result = _httpClientHelper.Get<Entity.SubsciberCompanyDetails>(string.Format("{0}subscriber/{1}/{2}/consumption/active", apiBaseURL, solutionCode, userEmail), _subcriptionAccessToken);
+                result = _httpClientHelper.Get<Entity.SubsciberCompanyDetails>(string.Format("{0}subscriber/{1}/{2}/consumption/active", apiBaseURL, solutionCode, consumerId), _subcriptionAccessToken);
             }
             catch (Exception ex)
             {

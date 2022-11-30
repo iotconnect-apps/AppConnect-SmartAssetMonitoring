@@ -7,6 +7,8 @@ using NetCore.AutoRegisterDi;
 using System.Reflection;
 using component.helper;
 using component.helper.Interface;
+using iot.solution.model.Repository.Interface;
+using iot.solution.service.AppSetting;
 
 namespace iot.solution.service.IocConfig
 {
@@ -14,25 +16,15 @@ namespace iot.solution.service.IocConfig
     {
         public static void Initialize(IServiceCollection services)
         {
-            //services.AddScoped<IUserRepository, UserRepository>();
-            //services.AddScoped<IRoleRepository, RoleRepository>();
-            //services.AddScoped<IUserService, UserService>();
-            //services.AddScoped<IRoleService, RoleService>();
-
-            
-            services.AddTransient<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<DbContext, devassetmonitoringContext>();
-            //services.AddSingleton<IIotConnectProvider>(provider => new IotConnectProvider("","",""));
 
             //resolve dependency of processing & object services
             services.RegisterAssemblyPublicNonGenericClasses().Where(c => c.Name.EndsWith("Service")).AsPublicImplementedInterfaces();
 
-            ////context 
-            //services.AddDbContext<FormsDataDbContext>(options => options.UseSqlServer(connectionString), contextLifetime: ServiceLifetime.Transient);
-
             //repository
             services.RegisterAssemblyPublicNonGenericClasses(Assembly.GetAssembly(typeof(UserRepository))).Where(c => c.Name.EndsWith("Repository")).AsPublicImplementedInterfaces();
 
-        }        
+            services.AddSingleton<IAppSettingRepository, AppSettingRepository>();
+
+        }
     }
 }

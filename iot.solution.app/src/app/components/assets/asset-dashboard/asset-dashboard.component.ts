@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NotificationService, AssetService, DeviceService, Notification, DashboardService } from '../../../services';
+import { NotificationService, AssetService, DeviceService, Notification, DashboardService, ApiConfigService } from '../../../services';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { MatDialog } from '@angular/material';
 import * as moment from 'moment-timezone';
@@ -13,6 +13,7 @@ import { Location } from '@angular/common';
 import 'chartjs-plugin-streaming';
 import * as _ from 'lodash';
 import { AppConstant } from 'app/app.constants';
+import * as signalR from '@microsoft/signalr';
 
 
 @Component({
@@ -74,7 +75,6 @@ export class AssetDashboardComponent implements OnInit {
   optionsdata: any = {
     type: 'line',
     scales: {
-
       xAxes: [{
         type: 'realtime',
         time: {
@@ -82,12 +82,8 @@ export class AssetDashboardComponent implements OnInit {
         },
         realtime: {
           duration: 90000,
-          refresh: 1000,
+          refresh: 6000,
           delay: 2000,
-          //onRefresh: '',
-
-          // delay: 2000
-
         }
 
       }],
@@ -99,6 +95,43 @@ export class AssetDashboardComponent implements OnInit {
       }]
 
     },
+		plugins: {
+			zoom: {
+				pan: {
+					enabled: true,
+					mode: 'xy',
+					rangeMin: {
+						// Format of min zoom range depends on scale type
+						x: null,
+						y: -200,
+					},
+					rangeMax: {
+						// Format of max zoom range depends on scale type
+						x: null,
+						y: 200,
+					},
+				},
+				zoom: {
+					enabled: true,
+					mode: 'x',
+					drag: false,
+					rangeMin: {
+						// Format of min zoom range depends on scale type
+						x: null,
+						y: -200,
+					},
+					rangeMax: {
+						// Format of max zoom range depends on scale type
+						x: null,
+						y: 200,
+					},
+					speed: 0.05,
+				},
+			},
+			streaming: {
+				ttl: 5 * 60 * 1000,
+			},
+		},
     tooltips: {
       mode: 'nearest',
       intersect: false
@@ -184,6 +217,10 @@ export class AssetDashboardComponent implements OnInit {
     'dots': false,
   };
   columnChartattribute: any;
+  protected apiServer = ApiConfigService.settings.apiServer;
+  connection;
+  currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
   constructor(
     public location: Location,
     private router: Router,
@@ -201,7 +238,7 @@ export class AssetDashboardComponent implements OnInit {
       this.getAssetDetails(params.assetGuid);
       this.getUpcomingMaintenancedate(params.assetGuid);
       this.getAlertList(params.assetGuid);
-     
+
     });
   }
 
@@ -245,7 +282,7 @@ export class AssetDashboardComponent implements OnInit {
     });
   }
 
- 
+
   /**
   * Get alert list by assetGuid
   * @param assetGuid
@@ -292,7 +329,7 @@ export class AssetDashboardComponent implements OnInit {
   getUpcomingMaintenancedate(assetGuid) {
     let currentdatetime = moment().format('YYYY-MM-DD[T]HH:mm:ss');
     let timezone = moment().utcOffset();
-    this.dashboardService.getUpcomingMaintenancedate(currentdatetime, timezone,assetGuid).subscribe(response => {
+    this.dashboardService.getUpcomingMaintenancedate(currentdatetime, timezone, assetGuid).subscribe(response => {
       if (response.isSuccess === true) {
         let msVal = (response.data['day']) ? response.data['day'] : 0;
         msVal += ' d ';
@@ -309,7 +346,7 @@ export class AssetDashboardComponent implements OnInit {
     });
   }
 
- 
+
 
   /**
    * Get attribute graph by assetId, type and attributename
@@ -481,6 +518,7 @@ export class AssetDashboardComponent implements OnInit {
   }
 
   toggleDataList(index: number, data) {
+
     this.activeListItem = index;
     if (data.attributeName != undefined && data.attributeName != '') {
       this.labelname = data.attributeName;
@@ -642,40 +680,23 @@ export class AssetDashboardComponent implements OnInit {
     this.subscription = this.messages.subscribe(this.on_next);
     this.subscribed = true;
   }
- // For get TelemetryData
- gettelemetryDetails(assetGuid) {
-  this.spinner.show();
-  this.deviceService.gettelemetryDetails(assetGuid).subscribe(response => {
-    if (response.isSuccess === true) {
-      this.spinner.hide();
-      this.sensdata = response.data
-      this.chartDataList = response.data
-      let data = {"attributeName": response.data[0].attributeName}
-      this.toggleDataList(0,data)
-      let temp = [];
-      response.data.forEach((element, i) => {
-        var colorNames = Object.keys(this.chartColors);
-        var colorName = colorNames[i % colorNames.length];
-        var newColor = this.chartColors[colorName];
-        var graphLabel = {
-          label: element.attributeName,
-          backgroundColor: 'rgb(153, 102, 255)',
-          borderColor: newColor,
-          fill: false,
-          cubicInterpolationMode: 'monotone',
-          data: []
-        }
-        temp.push(graphLabel);
-      });
-      this.datasets = temp;
-      this.getStompConfig();
-      /*	let temp = [];
+  // For get TelemetryData
+  gettelemetryDetails(assetGuid) {
+    this.spinner.show();
+    this.deviceService.gettelemetryDetails(assetGuid).subscribe(response => {
+      if (response.isSuccess === true) {
+        this.spinner.hide();
+        this.sensdata = response.data
+        this.chartDataList = response.data
+        let data = { "attributeName": response.data[0].attributeName }
+      //  this.toggleDataList(0, data)
+        let temp = [];
         response.data.forEach((element, i) => {
           var colorNames = Object.keys(this.chartColors);
           var colorName = colorNames[i % colorNames.length];
           var newColor = this.chartColors[colorName];
           var graphLabel = {
-            label: element.text,
+            label: element.attributeName,
             backgroundColor: 'rgb(153, 102, 255)',
             borderColor: newColor,
             fill: false,
@@ -684,19 +705,48 @@ export class AssetDashboardComponent implements OnInit {
           }
           temp.push(graphLabel);
         });
-        // response.data.forEach(element, i) => {
- 
-        // });
+
         this.datasets = temp;
-        this.getStompConfig();*/
-    } else {
-      //this._notificationService.handleResponse(response,"error");
-    }
-  }, error => {
-    this.spinner.hide();
-   // this._notificationService.handleResponse(error,"error");
-  });
-}
+
+
+        // this.getStompConfig();
+
+        if (this.connection) {
+          this.connection.stop();
+          this.connection = undefined;
+        }
+
+        this.getSignalRConfig();
+
+
+        /*	let temp = [];
+          response.data.forEach((element, i) => {
+            var colorNames = Object.keys(this.chartColors);
+            var colorName = colorNames[i % colorNames.length];
+            var newColor = this.chartColors[colorName];
+            var graphLabel = {
+              label: element.text,
+              backgroundColor: 'rgb(153, 102, 255)',
+              borderColor: newColor,
+              fill: false,
+              cubicInterpolationMode: 'monotone',
+              data: []
+            }
+            temp.push(graphLabel);
+          });
+          // response.data.forEach(element, i) => {
+   
+          // });
+          this.datasets = temp;
+          this.getStompConfig();*/
+      } else {
+        //this._notificationService.handleResponse(response,"error");
+      }
+    }, error => {
+      this.spinner.hide();
+      // this._notificationService.handleResponse(error,"error");
+    });
+  }
   /**
    * on_next call
    * */
@@ -713,7 +763,8 @@ export class AssetDashboardComponent implements OnInit {
         if (response.isSuccess === true) {
           this.spinner.hide();
           this.chartDataList = response.data
-        }})
+        }
+      })
       this.optionsdata = {
         type: 'line',
         scales: {
@@ -725,7 +776,7 @@ export class AssetDashboardComponent implements OnInit {
             },
             realtime: {
               duration: 90000,
-              refresh: 7000,
+              refresh: 6000,
               delay: 2000,
               onRefresh: function (chart: any) {
                 if (chart.height) {
@@ -734,7 +785,7 @@ export class AssetDashboardComponent implements OnInit {
                     chart.data.datasets.forEach(function (dataset: any) {
                       dataset.data.push({
 
-                        x: now,
+                        x: dates,
 
                         y: reporting_data[dataset.label]
 
@@ -775,43 +826,43 @@ export class AssetDashboardComponent implements OnInit {
       if (obj.data.data.status === 'off') {
         this.deviceIsConnected = false;
         this.optionsdata = {
-        type: 'line',
-    scales: {
+          type: 'line',
+          scales: {
 
-      xAxes: [{
-        type: 'realtime',
-        time: {
-          stepSize: 10
-        },
-        realtime: {
-          duration: 90000,
-          refresh: 1000,
-          delay: 2000,
-          //onRefresh: '',
+            xAxes: [{
+              type: 'realtime',
+              time: {
+                stepSize: 10
+              },
+              realtime: {
+                duration: 90000,
+                refresh: 1000,
+                delay: 2000,
+                //onRefresh: '',
 
-          // delay: 2000
+                // delay: 2000
 
-        }
+              }
 
-      }],
-      yAxes: [{
-        scaleLabel: {
-          display: true,
-          labelString: 'value'
-        }
-      }]
+            }],
+            yAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: 'value'
+              }
+            }]
 
-    },
-    tooltips: {
-      mode: 'nearest',
-      intersect: false
-    },
-    hover: {
-      mode: 'nearest',
-      intersect: false
-    }
+          },
+          tooltips: {
+            mode: 'nearest',
+            intersect: false
+          },
+          hover: {
+            mode: 'nearest',
+            intersect: false
+          }
 
-  };
+        };
       } else {
         this.deviceIsConnected = true;
       }
@@ -819,5 +870,199 @@ export class AssetDashboardComponent implements OnInit {
     obj.data.data.time = now;
 
   }
+
+  getSignalRConfig() {
+    this.cpId = this.currentUser.userDetail.cpId;
+    this.connection = new signalR.HubConnectionBuilder()
+      //.withUrl(this._appConstant.signalRServer)
+      .withUrl(this.apiServer.SignalRDataUrl + "notificationhub?groupName=" + this.cpId + '-' + this.uniqueId)
+      .configureLogging(signalR.LogLevel.Trace)
+      .withAutomaticReconnect()
+      .build();
+
+    this.start();
+    this.getNotificationSignalRData();
+  }
+  //signalr connection start
+  async start() {
+    try {
+      await this.connection.start();
+      console.log("connected.");
+      //this.registerUser();
+    } catch (err) {
+      console.log(err);
+      setTimeout(() => this.start(), 5000);
+    }
+  };
+
+
+
+  getNotificationSignalRData() {
+    var self = this;
+    if (self.connection) {
+
+      self.connection.on("ReceiveMessage", function (message) {
+
+        let obj: any = JSON.parse(message.message);
+        let reporting_data = obj.data.data.reporting
+        self.isConnected = true;
+
+        let dates = obj.data.data.time;
+        let now = moment();
+        if (obj.data.data.status == undefined && obj.data.msgType == 'telemetry' && obj.data.msgType != 'device' && obj.data.msgType != 'simulator') {
+          self.deviceIsConnected = true;
+          self.deviceService.gettelemetryDetails(self.assetGuid).subscribe(response => {
+            if (response.isSuccess === true) {
+              self.spinner.hide();
+              self.chartDataList = response.data
+            }
+          })
+          // self.optionsdata = {
+          //   type: 'line',
+          //   scales: {
+          //     xAxes: [{
+          //       type: 'realtime',
+          //       time: {
+          //         stepSize: 10
+          //       },
+          //       realtime: {
+          //         duration: 90000,
+          //         refresh: 6000,
+          //         delay: 2000,
+          //         onRefresh: function (chart: any) {
+          //           if (chart.height) {
+          //             if (obj.data.data.status != 'on') {
+          //               chart.data.datasets.forEach(function (dataset: any) {
+          //                 dataset.data.push({
+          //                   x: dates,
+          //                   y: reporting_data[dataset.label]
+
+          //                 });
+          //               });
+          //             }
+          //           } else {
+          //           }
+          //         },
+          //       }
+          //     }],
+          //     yAxes: [{
+          //       scaleLabel: {
+          //         display: true,
+          //         labelString: 'value'
+          //       }
+          //     }]
+
+          //   },
+          //   plugins: {
+          //     zoom: {
+          //       pan: {
+          //         enabled: true,
+          //         mode: 'xy',
+          //         rangeMin: {
+          //           // Format of min zoom range depends on scale type
+          //           x: null,
+          //           y: -200,
+          //         },
+          //         rangeMax: {
+          //           // Format of max zoom range depends on scale type
+          //           x: null,
+          //           y: 200,
+          //         },
+          //       },
+          //       zoom: {
+          //         enabled: true,
+          //         mode: 'x',
+          //         drag: false,
+          //         rangeMin: {
+          //           // Format of min zoom range depends on scale type
+          //           x: null,
+          //           y: -200,
+          //         },
+          //         rangeMax: {
+          //           // Format of max zoom range depends on scale type
+          //           x: null,
+          //           y: 200,
+          //         },
+          //         speed: 0.05,
+          //       },
+          //     },
+          //     streaming: {
+          //       ttl: 5 * 60 * 1000,
+          //     },
+          //   },
+          //   tooltips: {
+          //     mode: 'nearest',
+          //     intersect: false
+          //   },
+          //   hover: {
+          //     mode: 'nearest',
+          //     intersect: false
+          //   }
+
+          // }
+
+          if (obj.data.data.status != 'on') {
+						let now = moment();
+						self.datasets.forEach((s, index) => {
+							if (obj.data.data.reporting[s.label]) {
+								let val = Number(parseFloat(obj.data.data.reporting[s.label]).toFixed(2));
+								self.datasets[index].data.push({
+									x: now,
+									y: val
+								})
+							}
+						});
+					}
+          
+        } else if (obj.data.msgType === 'simulator' || obj.data.msgType === 'device') {
+          if (obj.data.data.status === 'off') {
+            self.deviceIsConnected = false;
+            self.optionsdata = {
+              type: 'line',
+              scales: {
+
+                xAxes: [{
+                  type: 'realtime',
+                  time: {
+                    stepSize: 10
+                  },
+                  realtime: {
+                    duration: 90000,
+                    refresh: 1000,
+                    delay: 2000,
+                    //onRefresh: '',
+
+                    // delay: 2000
+
+                  }
+
+                }],
+                yAxes: [{
+                  scaleLabel: {
+                    display: true,
+                    labelString: 'value'
+                  }
+                }]
+
+              },
+              tooltips: {
+                mode: 'nearest',
+                intersect: false
+              },
+              hover: {
+                mode: 'nearest',
+                intersect: false
+              }
+
+            };
+          } else {
+            self.deviceIsConnected = true;
+          }
+        }
+        obj.data.data.time = now;
+      });
+    }
+  }
+
 
 }

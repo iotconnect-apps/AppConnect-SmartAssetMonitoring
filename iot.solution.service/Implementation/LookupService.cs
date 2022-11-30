@@ -1,9 +1,12 @@
 ﻿using component.helper;
 using component.logger;
+using iot.solution.common;
 using iot.solution.data;
 using iot.solution.entity;
 using iot.solution.model.Repository.Interface;
+using iot.solution.service.AppSetting;
 using iot.solution.service.Interface;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -27,15 +30,17 @@ namespace iot.solution.service.Data
         private readonly IKitTypeAttributeRepository _kitTypeAttributeRepository;
         private readonly IkitTypeCommandRepository _kitTypeCommandRepository;
         private readonly IDeviceTypeRepository _deviceTypeRepository;
-      
+        public  IConfiguration _configuration { get; set; }
+
         public string ConnectionString = component.helper.SolutionConfiguration.Configuration.ConnectionString;
         public LookupService(LogHandler.Logger logManager, IDeviceRepository deviceRepository,IkitTypeCommandRepository kitTypeCommandRepository
            , IEntityRepository entityRepository, IHardwareKitRepository hardwareKitRepository
              , ICompanyRepository companyRepository
            , IKitTypeRepository kitTypeRepository, 
             IKitTypeAttributeRepository kitTypeAttributeRepository
-            ,IDeviceTypeRepository deviceTypeRepository)
+            ,IDeviceTypeRepository deviceTypeRepository, IConfiguration configuration)
         {
+            _configuration = configuration;
             _logger = logManager;
             _deviceRepository = deviceRepository;
             _kitTypeCommandRepository = kitTypeCommandRepository;
@@ -45,7 +50,7 @@ namespace iot.solution.service.Data
             _kitTypeAttributeRepository = kitTypeAttributeRepository;
             _kitTypeRepository = kitTypeRepository;
              _deviceTypeRepository=deviceTypeRepository;
-            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, SolutionConfiguration.Configuration.EnvironmentCode, SolutionConfiguration.Configuration.SolutionKey);
+            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EnvironmentCode.ToString()), ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SolutionKey.ToString()));
         }
         public string GetIotTemplateGuidByName(string templateName)
         {
@@ -247,18 +252,26 @@ namespace iot.solution.service.Data
             List<Entity.LookupItemWithDescription> result = new List<Entity.LookupItemWithDescription>();
             try
             {
-                var template = _kitTypeRepository.FindBy(t => t.Guid == templateId).FirstOrDefault();
-                if (template != null)
+                List<IoTConnect.Model.AttributeResult> attributeList = _iotConnectClient.Template.AllAttribute(templateId.ToString(), new IoTConnect.Model.PagingModel() { }, "").Result.data;
+
+                result = attributeList.Select(x => new Entity.LookupItemWithDescription()
                 {
-                  
-                    result.AddRange(from t in _kitTypeAttributeRepository.FindBy(t => t.TemplateGuid == templateId).ToList()
-                                    select new Entity.LookupItemWithDescription()
-                                    {
-                                        Text = t.LocalName,//string.Format("{0}({1})", t.LocalName, t.Tag),
-                                        Value = t.Guid.ToString().ToUpper(), //string.Format("{0}({1})", t.LocalName, t.Tag)
-                                        Description=t.Description.ToString()
-                                    });
-                }
+                    Text =  x.localName ,
+                    Value = x.guid.ToString().ToUpper(),
+                    Description = x.description.ToString()
+                }).ToList();
+                //var template = _kitTypeRepository.FindBy(t => t.Guid == templateId).FirstOrDefault();
+                //if (template != null)
+                //{
+
+                //    result.AddRange(from t in _kitTypeAttributeRepository.FindBy(t => t.TemplateGuid == templateId).ToList()
+                //                    select new Entity.LookupItemWithDescription()
+                //                    {
+                //                        Text = t.LocalName,//string.Format("{0}({1})", t.LocalName, t.Tag),
+                //                        Value = t.Guid.ToString().ToUpper(), //string.Format("{0}({1})", t.LocalName, t.Tag)
+                //                        Description=t.Description.ToString()
+                //                    });
+                //}
             }
             catch (Exception ex)
             {
@@ -271,16 +284,23 @@ namespace iot.solution.service.Data
             List<Entity.LookupItem> result = new List<Entity.LookupItem>();
             try
             {
-                var template = _kitTypeRepository.FindBy(t => t.Guid == templateId).FirstOrDefault();
-                if (template != null)
+                List<IoTConnect.Model.AllCommandResult> attributeList = _iotConnectClient.Template.AllTemplateCommand(templateId.ToString(), new IoTConnect.Model.PagingModel() { }).Result.data;
+
+                return attributeList.Select(x => new Entity.LookupItem()
                 {
-                    result = (from t in _kitTypeCommandRepository.GetAll()
-                              select new Entity.LookupItem()
-                              {
-                                  Text = t.Name,
-                                  Value = t.Guid.ToString().ToUpper()
-                              }).ToList();
-                }
+                    Text = x.name,
+                    Value = x.guid.ToUpper()
+                }).ToList();
+                //var template = _kitTypeRepository.FindBy(t => t.Guid == templateId).FirstOrDefault();
+                //if (template != null)
+                //{
+                //    result = (from t in _kitTypeCommandRepository.GetAll()
+                //              select new Entity.LookupItem()
+                //              {
+                //                  Text = t.Name,
+                //                  Value = t.Guid.ToString().ToUpper()
+                //              }).ToList();
+                //}
             }
             catch (Exception ex)
             {

@@ -14,6 +14,7 @@ using Model = iot.solution.model.Models;
 using LogHandler = component.services.loghandler;
 using System.Xml.Serialization;
 using System.IO;
+using Microsoft.EntityFrameworkCore;
 
 namespace iot.solution.model.Repository.Implementation
 {
@@ -62,7 +63,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "EntityRepository.List");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     DateTime dateValue;
                     if (DateTime.TryParse(request.CurrentDate.ToString(), out dateValue))
@@ -102,7 +103,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "EntityRepository.Manage");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
                     
@@ -154,7 +155,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "EntityRepository.Get");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     DateTime dateValue;
                     if (DateTime.TryParse(currentDate.ToString(), out dateValue))

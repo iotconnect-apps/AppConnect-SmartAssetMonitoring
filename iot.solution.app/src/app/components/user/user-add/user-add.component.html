@@ -15,8 +15,8 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">First Name<b>*</b></label>
                 <mat-form-field>
-                  <input matInput [(ngModel)]="userObject['firstName']" formControlName="firstName" type="text" maxlength="50" class="form-control"
-                    tabindex="1" placeholder="Enter First Name" autofocus>
+                  <input matInput [(ngModel)]="userObject['firstName']" formControlName="firstName" type="text"
+                    maxlength="50" class="form-control" tabindex="1" placeholder="Enter First Name" autofocus>
                   <div class="form-control-feedback" *ngIf="userForm.controls['firstName'].errors">
                     <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
                       *ngIf="userForm.controls['firstName'].errors.required && checkSubmitStatus">
@@ -30,8 +30,8 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Last Name<b>*</b></label>
                 <mat-form-field>
-                  <input matInput [(ngModel)]="userObject['lastName']" formControlName="lastName" type="text" maxlength="50" class="form-control"
-                    tabindex="1" placeholder="Enter Last Name" autofocus>
+                  <input matInput [(ngModel)]="userObject['lastName']" formControlName="lastName" type="text"
+                    maxlength="50" class="form-control" tabindex="1" placeholder="Enter Last Name" autofocus>
                   <div class="form-control-feedback" *ngIf="userForm.controls['lastName'].errors">
                     <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
                       *ngIf="userForm.controls['lastName'].errors.required && checkSubmitStatus">
@@ -47,14 +47,15 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Contact<b>*</b></label>
                 <mat-form-field>
-                  <input matInput [(ngModel)]="userObject['contactNo']" formControlName="contactNo" type="text" [textMask]="mask"  maxlength="50" class="form-control"
-                    tabindex="2" placeholder="Enter Contact Number">
-                    <div class="form-control-feedback" *ngIf="userForm.controls['contactNo'].errors">
-                      <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
-                        *ngIf="userForm.controls['contactNo'].errors.required && checkSubmitStatus">
-                        Please enter Contact
-                      </p>
-                    </div>
+                  <input matInput [(ngModel)]="userObject['contactNo']" formControlName="contactNo" type="text"
+                    [textMask]="mask" maxlength="50" class="form-control" tabindex="2"
+                    placeholder="Enter Contact Number">
+                  <div class="form-control-feedback" *ngIf="userForm.controls['contactNo'].errors">
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                      *ngIf="userForm.controls['contactNo'].errors.required && checkSubmitStatus">
+                      Please enter Contact
+                    </p>
+                  </div>
                 </mat-form-field>
               </fieldset>
             </div>
@@ -62,18 +63,18 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Email<b>*</b></label>
                 <mat-form-field>
-                  <input matInput [(ngModel)]="userObject['email']" formControlName="email" type="text" maxlength="50" class="form-control"
-                    tabindex="2" placeholder="Enter Email address">
-                    <div class="form-control-feedback" *ngIf="userForm.controls['email'].errors">
-                      <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
-                        *ngIf="userForm.controls['email'].errors.required && checkSubmitStatus">
-                        Please enter Email address 
-                      </p>
-                      <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
-                        *ngIf="userForm.controls['email'].errors.pattern && checkSubmitStatus">
-                        Please enter valid Email Address
-                      </p>
-                    </div>
+                  <input matInput [(ngModel)]="userObject['email']" formControlName="email" type="text" maxlength="50"
+                    class="form-control" tabindex="2" placeholder="Enter Email address" [disabled]="disabled" [readonly]="isEdit">
+                  <div class="form-control-feedback" *ngIf="userForm.controls['email'].errors">
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                      *ngIf="userForm.controls['email'].errors.required && checkSubmitStatus">
+                      Please enter Email address
+                    </p>
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                      *ngIf="userForm.controls['email'].errors.pattern && checkSubmitStatus">
+                      Please enter valid Email Address
+                    </p>
+                  </div>
                 </mat-form-field>
               </fieldset>
             </div>
@@ -81,9 +82,9 @@
               <fieldset class="form-group form-field non-input-element">
                 <label class="form-label">Location<b>*</b></label>
                 <ng-select tabindex="4" [searchable]="userForm.controls.entityGuid.value?false:true" class="custom"
-                [selectOnTab]="true" [placeholder]="userForm.controls.entityGuid.value?'':'Select Location'"
-                [items]="locationList"  bindLabel="text" formControlName="entityGuid"
-                bindValue="value" [(ngModel)]="userObject['entityGuid']">
+                  [selectOnTab]="true" [placeholder]="userForm.controls.entityGuid.value?'':'Select Location'"
+                  [items]="locationList" bindLabel="text" formControlName="entityGuid" bindValue="value"
+                  [(ngModel)]="userObject['entityGuid']">
 
                 </ng-select>
                 <div class="form-control-feedback" *ngIf="userForm.controls['entityGuid'].errors">
@@ -92,18 +93,18 @@
                     Please select Location
                   </p>
                 </div>
-              
+
               </fieldset>
             </div>
-            <br/>
-            <br/>
+            <br />
+            <br />
             <div class="col-md-6">
               <fieldset class="form-group form-field non-input-element">
                 <label class="form-label">Time Zone<b>*</b></label>
                 <ng-select tabindex="5" [searchable]="userForm.controls.timeZoneGuid.value?false:true" class="custom"
-                [selectOnTab]="true" [placeholder]="userForm.controls.timeZoneGuid.value?'':'Select Time Zone'"
-                [items]="timeZoneList"  bindLabel="text" formControlName="timeZoneGuid"
-                bindValue="value" [(ngModel)]="userObject['timezoneGuid']">
+                  [selectOnTab]="true" [placeholder]="userForm.controls.timeZoneGuid.value?'':'Select Time Zone'"
+                  [items]="timeZoneList" bindLabel="text" formControlName="timeZoneGuid" bindValue="value"
+                  [(ngModel)]="userObject['timezoneGuid']">
 
                 </ng-select>
                 <div class="form-control-feedback" *ngIf="userForm.controls['timeZoneGuid'].errors">
@@ -112,16 +113,16 @@
                     Please select Time Zone
                   </p>
                 </div>
-               
+
               </fieldset>
             </div>
             <div class="col-md-6">
               <fieldset class="form-group form-field non-input-element">
                 <label class="form-label">Role<b>*</b></label>
                 <ng-select tabindex="5" [searchable]="userForm.controls.roleGuid.value?false:true" class="custom"
-                [selectOnTab]="true" [placeholder]="userForm.controls.roleGuid.value?'':'Select Role'"
-                [items]="roleList"  bindLabel="name" formControlName="roleGuid"
-                bindValue="guid" [(ngModel)]="userObject['roleGuid']">
+                  [selectOnTab]="true" [placeholder]="userForm.controls.roleGuid.value?'':'Select Role'"
+                  [items]="roleList" bindLabel="name" formControlName="roleGuid" bindValue="guid"
+                  [(ngModel)]="userObject['roleGuid']">
 
                 </ng-select>
                 <div class="form-control-feedback" *ngIf="userForm.controls['roleGuid'].errors">
@@ -130,7 +131,7 @@
                     Please select Role
                   </p>
                 </div>
-               
+
               </fieldset>
             </div>
           </div>

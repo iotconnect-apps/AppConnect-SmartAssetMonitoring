@@ -13,21 +13,21 @@ using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
 using Response = iot.solution.entity.Response;
 using LogHandler = component.services.loghandler;
-using System.Xml.Serialization;
+using Microsoft.EntityFrameworkCore;
 
 namespace iot.solution.model.Repository.Implementation
 {
     public class DeviceRepository : GenericRepository<Model.Device>, IDeviceRepository
     {
         private readonly LogHandler.Logger logger;
-     
+
         private readonly IWebHostEnvironment _env;
-        
-        public DeviceRepository(IUnitOfWork unitOfWork,  LogHandler.Logger logManager,IWebHostEnvironment env) : base(unitOfWork, logManager)
+
+        public DeviceRepository(IUnitOfWork unitOfWork, LogHandler.Logger logManager, IWebHostEnvironment env) : base(unitOfWork, logManager)
         {
             logger = logManager;
             _uow = unitOfWork;
-            
+
             _env = env;
         }
 
@@ -38,8 +38,8 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceRepository.Get");
-               
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CompanyId, component.helper.SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("companyGuid", component.helper.SolutionConfiguration.CompanyId, DbType.Guid, ParameterDirection.Input));
@@ -50,14 +50,14 @@ namespace iot.solution.model.Repository.Implementation
                     {
                         result = listResult.Items[0];
                         result.DeviceMediaFiles = GetMediaFiles(result.Guid.Value, "M");
-                        result.DeviceImageFiles = GetMediaFiles(result.Guid.Value, "I");                      
+                        result.DeviceImageFiles = GetMediaFiles(result.Guid.Value, "I");
 
                         result.DeviceAttributes = _uow.DbContext.DeviceAttribute.Where(u => u.DeviceGuid == deviceId && !u.IsDeleted).Select(g => new Entity.DeviceAttribute()
                         {
                             Guid = g.Guid,
                             AttrGuid = g.AttrGuid,
                             AttrName = g.AttrName,
-                            DispName = g.DisplayName                            
+                            DispName = g.DisplayName
                         }).ToList();
 
                     }
@@ -70,7 +70,7 @@ namespace iot.solution.model.Repository.Implementation
             }
             return result;
         }
-        private string GetFileSize(string FilePath) 
+        private string GetFileSize(string FilePath)
         {
             string[] sizes = { "B", "KB", "MB", "GB", "TB" };
             string fileSize = string.Empty;
@@ -93,25 +93,25 @@ namespace iot.solution.model.Repository.Implementation
                     // show a single decimal place, and no space.
                     fileSize = String.Format("{0:0.##} {1}", len, sizes[order]);
                 }
-                catch (Exception ex) 
-                { 
-                
+                catch (Exception ex)
+                {
+
                 }
             }
             return fileSize;
         }
-       
+
         public Entity.ActionStatus Manage(Model.DeviceModel request)
         {
             ActionStatus result = new ActionStatus(true);
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceRepository.Manage");
-                
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
 
-                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
+                    List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("guid", request.Guid, DbType.Guid, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("companyGuid", request.CompanyGuid, DbType.Guid, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("entityGuid", request.EntityGuid, DbType.Guid, ParameterDirection.Input));
@@ -124,14 +124,14 @@ namespace iot.solution.model.Repository.Implementation
                     //parameters.Add(sqlDataAccess.CreateParameter("tag", request.Tag, DbType.String, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("description", request.Description, DbType.String, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("specification", request.Specification, DbType.String, ParameterDirection.Input));
-                   //parameters.Add(sqlDataAccess.CreateParameter("image", request.Image, DbType.String, ParameterDirection.Input));
+                    //parameters.Add(sqlDataAccess.CreateParameter("image", request.Image, DbType.String, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("isProvisioned", request.IsProvisioned, DbType.Boolean, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("attrData", request.attrData, DbType.Xml, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("sensorGuid", request.SensorGuid, DbType.Guid, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("sensorCondition", request.SensorCondition, DbType.String, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("sensorValue", request.SensorValue, DbType.String, ParameterDirection.Input));
-                    
-                        
+
+
                     parameters.Add(sqlDataAccess.CreateParameter("newid", request.Guid, DbType.Guid, ParameterDirection.Output));
                     parameters.Add(sqlDataAccess.CreateParameter("culture", component.helper.SolutionConfiguration.Culture, DbType.String, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("enableDebugInfo", component.helper.SolutionConfiguration.EnableDebugInfo, DbType.String, ParameterDirection.Input));
@@ -155,7 +155,7 @@ namespace iot.solution.model.Repository.Implementation
                         {
                             result.Message = "Unique ID Sould Be Unique";
                         }
-                       
+
                         else
                         {
                             result.Message = "Failed To Save Device";
@@ -180,11 +180,12 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceRepository.List");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, request.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("companyguid", component.helper.SolutionConfiguration.CompanyId, DbType.Guid, ParameterDirection.Input));
-                    if (request.EntityId != Guid.Empty) {
+                    if (request.EntityId != Guid.Empty)
+                    {
                         parameters.Add(sqlDataAccess.CreateParameter("entityGuid", request.EntityId, DbType.Guid, ParameterDirection.Input));
                     }
                     if (request.ParentEntityGuid != Guid.Empty)
@@ -209,17 +210,17 @@ namespace iot.solution.model.Repository.Implementation
             }
             return result;
         }
-        
 
-      
-      
+
+
+
         public List<Response.EntityWiseDeviceResponse> GetEntityWiseDevices(Guid? locationId, Guid? deviceId)
         {
             List<Response.EntityWiseDeviceResponse> result = new List<Response.EntityWiseDeviceResponse>();
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "GetLocationDevices.Get");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CompanyId, component.helper.SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("companyGuid", component.helper.SolutionConfiguration.CompanyId, DbType.Guid, ParameterDirection.Input));
@@ -241,7 +242,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "ValidateKit.Get");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CompanyId, component.helper.SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("kitCode", kitCode, DbType.String, ParameterDirection.Input));
@@ -253,7 +254,7 @@ namespace iot.solution.model.Repository.Implementation
                     {
                         result.IsSuccess = true;
                     }
-                    else 
+                    else
                     {
                         string msg = parameters.Where(p => p.ParameterName.Equals("fieldname")).FirstOrDefault().Value.ToString();
                         if (msg == "InvalidKitCode")
@@ -281,8 +282,8 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceRepository.ProvisionKit");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
-                {                   
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
+                {
 
                     List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CompanyId, component.helper.SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("kitCode", request.KitCode, DbType.String, ParameterDirection.Input));
@@ -336,7 +337,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceRepository.UploadFiles");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
                     parameters.Add(sqlDataAccess.CreateParameter("deviceGuid", Guid.Parse(deviceId)));
@@ -373,7 +374,7 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "DeviceRepository.DeleteMediaFiles");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
 
                     List<DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, component.helper.SolutionConfiguration.Version);
@@ -408,7 +409,7 @@ namespace iot.solution.model.Repository.Implementation
 
         public List<Entity.LookupItem> GetDeviceLookup()
         {
-            using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+            using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
             {
                 return sqlDataAccess.QueryList<Entity.LookupItem>("SELECT CONVERT(NVARCHAR(50),[Guid]) AS [Value], [name] AS [Text] FROM [DeviceType] WHERE [isActive] = 1 AND [isDeleted] = 0");
             }

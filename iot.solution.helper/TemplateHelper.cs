@@ -11,6 +11,7 @@ using LogHandler = component.services.loghandler;
 using System.Reflection;
 using System;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
 
 namespace component.helper
 {
@@ -18,9 +19,10 @@ namespace component.helper
     {
         private readonly static IotConnectClient _iotConnectClient;
         public static List<IoTConnect.Model.AttributeResult> attributeList;
+        public static IConfiguration Configuration { get; set; }
         static TemplateHelper()
         {
-            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, SolutionConfiguration.Configuration.EnvironmentCode, SolutionConfiguration.Configuration.SolutionKey);
+            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, Configuration.GetSection("EnvironmentCode").Value, Configuration.GetSection("SolutionKey").Value);
         }
 
 

@@ -138,6 +138,7 @@ BEGIN
 			  OR (u.firstname + '' '' + u.lastname) LIKE ''%' + @search + '%''
 			  OR u.email LIKE ''%' + @search + '%''
 			  OR r.[name] LIKE ''%' + @search + '%''
+			  OR E.[name] LIKE ''%' + @search + '%''
 			  OR u.[contactno] LIKE ''%' + @search + '%''
 			) '
 			 END +

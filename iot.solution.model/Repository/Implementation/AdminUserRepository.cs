@@ -8,6 +8,8 @@ using System.Linq;
 using Entity = iot.solution.entity;
 using Model = iot.solution.model.Models;
 using LogHandler = component.services.loghandler;
+using Microsoft.EntityFrameworkCore;
+
 namespace iot.solution.model.Repository.Implementation
 {
     public class AdminUserRepository : GenericRepository<Model.AdminUser>, IAdminUserRepository
@@ -43,7 +45,7 @@ namespace iot.solution.model.Repository.Implementation
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "AdminUserRepository.Get");
                 result = _uow.DbContext.AdminUser.Where(x => x.Email.Equals(request.Username)).FirstOrDefault();
-               
+
 
                 logger.InfoLog(Constants.ACTION_EXIT, "AdminUserRepository.Get");
             }
@@ -59,12 +61,13 @@ namespace iot.solution.model.Repository.Implementation
             try
             {
                 logger.InfoLog(Constants.ACTION_ENTRY, "AdminUserRepository.Get");
-                using (var sqlDataAccess = new SqlDataAccess(ConnectionString))
+
+                using (var sqlDataAccess = new SqlDataAccess(_uow.DbContext.Database.GetConnectionString()))
                 {
                     List<System.Data.Common.DbParameter> parameters = sqlDataAccess.CreateParams(component.helper.SolutionConfiguration.CurrentUserId, request.Version);
 
                     parameters.Add(sqlDataAccess.CreateParameter("companyguid", request.CompanyId, DbType.String, ParameterDirection.Input));
-                    parameters.Add(sqlDataAccess.CreateParameter("search", request.SearchText, DbType.String, ParameterDirection.Input));
+                    parameters.Add(sqlDataAccess.CreateParameter("search", string.IsNullOrEmpty(request.SearchText) ? request.SearchText : request.SearchText.Trim(), DbType.String, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("pagesize", request.PageSize, DbType.Int32, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("pagenumber", request.PageNumber, DbType.Int32, ParameterDirection.Input));
                     parameters.Add(sqlDataAccess.CreateParameter("orderby", request.OrderBy, DbType.String, ParameterDirection.Input));

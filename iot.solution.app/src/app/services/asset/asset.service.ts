@@ -39,12 +39,12 @@ export class AssetService {
   }
 
   /**
-	 * Delete Asset Type by guid
-	 * @param guid
-	 */
+   * Delete Asset Type by guid
+   * @param guid
+   */
   deleteAssetType(guid) {
 
-    return this.httpClient.put<any>(this.apiServer.baseUrl + 'api/devicetype/delete?id='+guid,{}).map(response => {
+    return this.httpClient.put<any>(this.apiServer.baseUrl + 'api/devicetype/delete?id=' + guid, {}).map(response => {
       return response;
     });
   }
@@ -75,12 +75,13 @@ export class AssetService {
    */
   getAssets(parameters) {
     const reqParameter = {
-        entityGuid: parameters.entityGuid,
-        pageNo: parameters.pageNo + 1,
-        pageSize: parameters.pageSize,
-        searchText: parameters.searchText,
-        orderBy: parameters.orderBy,
-        timestamp: Date.now()
+      parentEntityGuid: parameters.parentEntityGuid,
+      entityGuid: parameters.entityGuid,
+      pageNo: parameters.pageNo + 1,
+      pageSize: parameters.pageSize,
+      searchText: parameters.searchText,
+      orderBy: parameters.orderBy,
+      timestamp: Date.now()
     };
 
     return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/device/search', reqParameter).map(response => {

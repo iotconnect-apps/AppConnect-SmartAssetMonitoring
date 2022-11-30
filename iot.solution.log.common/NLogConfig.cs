@@ -39,7 +39,7 @@ namespace component.logger.platform.common
                 dbLog.Parameters.Add(new DatabaseParameterInfo("@Exception", "${gdc:Exception}"));
                 dbLog.Parameters.Add(new DatabaseParameterInfo("@LogFile", "${gdc:LogFile}"));
                 dbLog.Parameters.Add(new DatabaseParameterInfo("@Identity", "${gdc:Identity}"));
-                dbLog.Parameters.Add(new DatabaseParameterInfo("@LogDate", "${gdc:LogDate}"));
+                dbLog.Parameters.Add(new DatabaseParameterInfo("@LogDate", "${date}"));
                 dbLog.Parameters.Add(new DatabaseParameterInfo("@Logger", "${gdc:Logger}"));
                 dbLog.Parameters.Add(new DatabaseParameterInfo("@Message", "${gdc:Message}"));
                 dbLog.Parameters.Add(new DatabaseParameterInfo("@MessageData", "${gdc:MessageData}"));

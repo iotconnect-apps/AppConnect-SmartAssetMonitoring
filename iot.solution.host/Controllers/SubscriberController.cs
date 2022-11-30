@@ -1,8 +1,10 @@
 ﻿using component.helper;
 using host.iot.solution.Controllers;
+using iot.solution.common;
 using iot.solution.entity;
 using iot.solution.entity.Response;
 using iot.solution.entity.Structs.Routes;
+using iot.solution.service.AppSetting;
 using iot.solution.service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,28 +23,31 @@ namespace iot.solution.host.Controllers
     public class SubscriberController : BaseController
     {
         private readonly ISubscriberService _service;
+        public IConfiguration _configuration { get; set; }
 
-        public SubscriberController(ISubscriberService service)
+        public SubscriberController(ISubscriberService service, IConfiguration configuration)
         {
             _service = service;
+            _configuration = configuration;
         }
 
-        [HttpGet]
-        [Route(SubscriberRoute.Route.GetStripeKey, Name = SubscriberRoute.Name.GetStripeKey)]
-        public Entity.BaseResponse<string> GetStripeKey()
-        {
-            Entity.BaseResponse<string> response = new Entity.BaseResponse<string>(true);
-            try
-            {
-                response.Data = component.helper.SolutionConfiguration.Configuration.SubscriptionAPI.StripeAPIKey;
-            }
-            catch (Exception ex)
-            {
-                base.LogException(ex);
-                return new Entity.BaseResponse<string>(false, ex.Message);
-            }
-            return response;
-        }
+        // right now not using this API so commented the API
+        //[HttpGet]
+        //[Route(SubscriberRoute.Route.GetStripeKey, Name = SubscriberRoute.Name.GetStripeKey)]
+        //public Entity.BaseResponse<string> GetStripeKey()
+        //{
+        //    Entity.BaseResponse<string> response = new Entity.BaseResponse<string>(true);
+        //    try
+        //    {
+        //        response.Data = component.helper.SolutionConfiguration.Configuration.SubscriptionAPI.StripeAPIKey;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        base.LogException(ex);
+        //        return new Entity.BaseResponse<string>(false, ex.Message);
+        //    }
+        //    return response;
+        //}
 
         [HttpGet]
         [Route(SubscriberRoute.Route.GetCountryLookup, Name = SubscriberRoute.Name.GetCountryLookup)]
@@ -102,7 +107,7 @@ namespace iot.solution.host.Controllers
             BaseResponse<Response.SubscriptionPlanResponse> response = new BaseResponse<Response.SubscriptionPlanResponse>(true);
             try
             {
-                response.Data = _service.GetSubscriptionPlans(component.helper.SolutionConfiguration.Configuration.SubscriptionAPI.SolutionCode);
+                response.Data = _service.GetSubscriptionPlans(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionSolutionId.ToString()));
             }
             catch (Exception ex)
             {
@@ -119,8 +124,8 @@ namespace iot.solution.host.Controllers
             try
             {
                 var apiResponse = _service.ValidateCompany(requestData);
-                     response.IsSuccess = apiResponse.Success;
-                    response.Message = apiResponse.Message;                
+                response.IsSuccess = apiResponse.Success;
+                response.Message = apiResponse.Message;
             }
             catch (Exception ex)
             {
@@ -161,7 +166,7 @@ namespace iot.solution.host.Controllers
             Entity.BaseResponse<Entity.SearchResult<List<Entity.SubscriberData>>> response = new Entity.BaseResponse<Entity.SearchResult<List<Entity.SubscriberData>>>(true);
             try
             {
-                response.Data = _service.SubscriberList(component.helper.SolutionConfiguration.Configuration.SubscriptionAPI.SolutionCode, new Entity.SearchRequest()
+                response.Data = _service.SubscriberList(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionSolutionCode.ToString()), new Entity.SearchRequest()
                 {
                     SearchText = searchText,
                     PageNumber = pageNo.Value,
@@ -180,12 +185,12 @@ namespace iot.solution.host.Controllers
 
         [HttpGet]
         [Route(SubscriberRoute.Route.GetSubscriberDetails, Name = SubscriberRoute.Name.GetSubscriberDetails)]
-        public BaseResponse<Entity.SubsciberCompanyDetails> GetSubscriberDetails(string userEmail)
+        public BaseResponse<Entity.SubsciberCompanyDetails> GetSubscriberDetails(string consumerId)
         {
             BaseResponse<Entity.SubsciberCompanyDetails> response = new BaseResponse<Entity.SubsciberCompanyDetails>(true);
             try
             {
-                response.Data = _service.GetSubscriberDetails(component.helper.SolutionConfiguration.Configuration.SubscriptionAPI.SolutionCode, userEmail);
+                response.Data = _service.GetSubscriberDetails(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionSolutionId.ToString()), Guid.Parse(consumerId));
             }
             catch (Exception ex)
             {
@@ -197,11 +202,11 @@ namespace iot.solution.host.Controllers
 
         [HttpGet]
         [Route(SubscriberRoute.Route.GetSubscriberKitDetails, Name = SubscriberRoute.Name.GetSubscriberKitDetails)]
-        public BaseResponse<Entity.SearchResult<List<Entity.HardwareKitResponse>>> GetSubscriberKitDetails(string companyID="",string searchText = "", int? pageNo = 1, int? pageSize = 10, string orderBy = "")
+        public BaseResponse<Entity.SearchResult<List<Entity.HardwareKitResponse>>> GetSubscriberKitDetails(string companyID = "", string searchText = "", int? pageNo = 1, int? pageSize = 10, string orderBy = "")
         {
             BaseResponse<Entity.SearchResult<List<Entity.HardwareKitResponse>>> response = new BaseResponse<Entity.SearchResult<List<Entity.HardwareKitResponse>>>(true);
-            if(string.IsNullOrEmpty(companyID))
-            companyID = SolutionConfiguration.CompanyId.ToString();
+            if (string.IsNullOrEmpty(companyID))
+                companyID = SolutionConfiguration.CompanyId.ToString();
 
             try
             {
@@ -212,7 +217,7 @@ namespace iot.solution.host.Controllers
                     PageSize = pageSize.Value,
                     OrderBy = orderBy,
 
-                },true);
+                }, true);
             }
             catch (Exception ex)
             {

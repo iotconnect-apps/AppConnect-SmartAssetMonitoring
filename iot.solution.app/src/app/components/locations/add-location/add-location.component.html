@@ -9,22 +9,21 @@
   <mat-card class="support-card">
     <div class="row">
       <div class="col col-ld-11">
-        <form autocomplete="off" [formGroup]="locationForm" (ngSubmit)="manageLocation()"
-          class="form-horizontal common-form">
+        <form [formGroup]="locationForm" (ngSubmit)="addLocation()" autocomplete="off" class="form-horizontal common-form">
           <div class="row">
             <div class="col-md-6">
               <fieldset class="form-group form-field">
-                <label class="form-label">Location Name<b>*</b></label>
+                <label class="form-label">Name<b>*</b></label>
                 <mat-form-field>
-                  <input matInput name="name" tabindex="1" [(ngModel)]="locationObject.name" formControlName="name" type="text" maxlength="50" class="form-control"
-                    placeholder="Name" autofocus>
+                  <input matInput name="name" formControlName="name" type="text" maxlength="50" [(ngModel)]="locationObject['name']"
+                         class="form-control" placeholder="Name">
                   <div class="form-control-feedback" *ngIf="locationForm.controls['name'].errors">
                     <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
-                      *ngIf="locationForm.controls['name'].errors.required && checkSubmitStatus">
-                      Please enter Location Name
+                       *ngIf="locationForm.controls['name'].errors.required && checkSubmitStatus">
+                      Please enter Name
                     </p>
                     <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
-                      *ngIf="locationForm.controls['name'].hasError('whitespace')">
+                       *ngIf="locationForm.controls['name'].hasError('whitespace')">
                       Please enter valid data
                     </p>
                   </div>
@@ -35,16 +34,16 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Address<b>*</b></label>
                 <mat-form-field>
-                  <textarea rows="3" matInput tabindex="2" formControlName="address" [(ngModel)]="locationObject.address" placeholder="Address" name="address"
-                  multiple class="form-control">
-
-                  </textarea>
-                  <!-- <input type="text" matInput formControlName="address" [(ngModel)]="locationObject.address" placeholder="address...." name="address"
-                    multiple class="form-control"> -->
+                  <textarea rows="3" matInput class="form-control" formControlName="address" placeholder="Address" name="address" [(ngModel)]="locationObject['address']"
+                            maxlength="255"></textarea>
                   <div class="form-control-feedback" *ngIf="locationForm.controls['address'].errors">
                     <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
-                      *ngIf="locationForm.controls['address'].errors.required && checkSubmitStatus">
+                       *ngIf="locationForm.controls['address'].errors.required && checkSubmitStatus">
                       Please enter Address
+                    </p>
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="locationForm.controls['address'].hasError('whitespace')">
+                      Please enter valid data
                     </p>
                   </div>
                 </mat-form-field>
@@ -53,57 +52,60 @@
           </div>
           <div class="row">
 
+
             <div class="col-md-6">
               <fieldset class="form-group form-field">
                 <label class="form-label">Country<b>*</b></label>
-                <ng-select tabindex="3" [searchable]="locationForm.controls.countryGuid.value?false:true" class="custom"
-                  [selectOnTab]="true" [placeholder]="locationForm.controls.countryGuid.value?'':'Country'"
-                  [items]="countryList" (change)="changeCountry($event)" bindLabel="text" formControlName="countryGuid"
-                  bindValue="value" [(ngModel)]="locationObject['countryGuid']">
+                <ng-select [searchable]="locationForm.controls.countryGuid.value?false:true"
+                           class="custom" [selectOnTab]="true"
+                           [placeholder]="locationForm.controls.countryGuid.value?'':'Country'"
+                           formControlName="countryGuid" [items]="countryList" (change)="changeCountry($event)"
+                           bindLabel="text" bindValue="value" [(ngModel)]="locationObject['countryGuid']">
                 </ng-select>
                 <div class="form-control-feedback custom" *ngIf="locationForm.controls['countryGuid'].errors">
                   <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                    *ngIf="locationForm.controls['countryGuid'].errors.required && checkSubmitStatus">
+                     *ngIf="locationForm.controls['countryGuid'].errors.required && checkSubmitStatus">
                     Please select Country
                   </p>
                 </div>
               </fieldset>
-
-             
-
             </div>
-
             <div class="col-md-6">
               <fieldset class="form-group form-field">
                 <label class="form-label">State<b>*</b></label>
-                <ng-select tabindex="4" [searchable]="locationForm.controls.stateGuid.value?false:true" class="custom"
-                  [selectOnTab]="true" [placeholder]="locationForm.controls.stateGuid.value?'':'State'"
-                  [items]="stateList" (change)="changeState($event)" bindLabel="text" formControlName="stateGuid"
-                  bindValue="value" [(ngModel)]="locationObject['stateGuid']">
+                <ng-select [searchable]="locationForm.controls.stateGuid.value?false:true"
+                           class="custom" [selectOnTab]="true"
+                           [placeholder]="locationForm.controls.stateGuid.value?'':'State'"
+                           formControlName="stateGuid" [items]="stateList"
+                           bindLabel="text" bindValue="value" [(ngModel)]="locationObject['stateGuid']">
                 </ng-select>
-                <div class="form-control-feedback custom" *ngIf="locationForm.controls['stateGuid'].errors">
+                <div class="form-control-feedback custom"
+                     *ngIf="locationForm.controls['stateGuid'].errors">
                   <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                    *ngIf="locationForm.controls['stateGuid'].errors.required && checkSubmitStatus">
+                     *ngIf="locationForm.controls['stateGuid'].errors.required && checkSubmitStatus">
                     Please select State
                   </p>
                 </div>
-           
               </fieldset>
             </div>
           </div>
           <br>
-
           <div class="row">
+
             <div class="col-md-6">
               <fieldset class="form-group form-field">
                 <label class="form-label">City<b>*</b></label>
                 <mat-form-field>
-                  <input tabindex="5" matInput name="city" [(ngModel)]="locationObject.city" formControlName="city" type="text" maxlength="50" class="form-control"
-                    placeholder="City">
+                  <input matInput name="city" formControlName="city" type="text" maxlength="50" [(ngModel)]="locationObject['city']"
+                         class="form-control" placeholder="City">
                   <div class="form-control-feedback" *ngIf="locationForm.controls['city'].errors">
-                    <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                      *ngIf="locationForm.controls['city'].errors.required && checkSubmitStatus">
-                      Please enter City Name
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="locationForm.controls['city'].errors.required && checkSubmitStatus">
+                      Please enter City
+                    </p>
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="locationForm.controls['city'].hasError('whitespace')">
+                      Please enter valid data
                     </p>
                   </div>
                 </mat-form-field>
@@ -113,35 +115,40 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Zip Code<b>*</b></label>
                 <mat-form-field>
-                  <input tabindex="6" matInput name="zipcode" [(ngModel)]="locationObject.zipcode" formControlName="zipcode" type="text" maxlength="7"
-                    class="form-control" placeholder="Zip Code">
+                  <input matInput name="zipcode" formControlName="zipcode" type="text" maxlength="7" [(ngModel)]="locationObject['zipcode']"
+                         class="form-control" placeholder="Zip Code">
                   <div class="form-control-feedback" *ngIf="locationForm.controls['zipcode'].errors">
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                      *ngIf="locationForm.controls['zipcode'].errors.required && checkSubmitStatus">
+                       *ngIf="locationForm.controls['zipcode'].errors.required && checkSubmitStatus">
                       Please enter Zip Code
+                    </p>
+                    <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+                       *ngIf="locationForm.controls['zipcode'].errors.pattern && checkSubmitStatus">
+                      Please enter valid Zip Code
+                    </p>
+                    <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                       *ngIf="locationForm.controls['zipcode'].hasError('whitespace')">
+                      Please enter valid data
                     </p>
                   </div>
                 </mat-form-field>
               </fieldset>
             </div>
           </div>
-
           <div class="row">
             <div class="col-md-6">
               <fieldset class="form-group form-field">
                 <label class="form-label">Latitude<b>*</b></label>
-                <!-- pattern="^-?([1-8]?[1-9]|[1-9]0)\.{1}\d{1,6}" -->
                 <mat-form-field>
-                  <input tabindex="7" matInput name="latitude" formControlName="latitude" [(ngModel)]="locationObject.latitude"
-                     type="text" maxlength="50" class="form-control"
-                    placeholder="Latitude">
+                  <input matInput name="latitude" formControlName="latitude" type="text" maxlength="20" [(ngModel)]="locationObject['latitude']"
+                         class="form-control" placeholder="Latitude">
                   <div class="form-control-feedback" *ngIf="locationForm.controls['latitude'].errors">
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                      *ngIf="locationForm.controls['latitude'].errors.required && checkSubmitStatus">
+                       *ngIf="locationForm.controls['latitude'].errors.required && checkSubmitStatus">
                       Please enter Latitude
                     </p>
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                      *ngIf="locationForm.controls['latitude'].errors.pattern && checkSubmitStatus">
+                       *ngIf="locationForm.controls['latitude'].errors.pattern && checkSubmitStatus">
                       Please enter valid Latitude
                     </p>
                   </div>
@@ -152,16 +159,15 @@
               <fieldset class="form-group form-field">
                 <label class="form-label">Longitude<b>*</b></label>
                 <mat-form-field>
-                  <input tabindex="8" matInput name="longitude" formControlName="longitude" [(ngModel)]="locationObject.longitude"
-                     type="text" maxlength="50" class="form-control"
-                    placeholder="Longitude">
+                  <input matInput name="longitude" formControlName="longitude" type="text" maxlength="20" [(ngModel)]="locationObject['longitude']"
+                         class="form-control" placeholder="Longitude">
                   <div class="form-control-feedback" *ngIf="locationForm.controls['longitude'].errors">
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                      *ngIf="locationForm.controls['longitude'].errors.required && checkSubmitStatus">
+                       *ngIf="locationForm.controls['longitude'].errors.required && checkSubmitStatus">
                       Please enter Longitude
                     </p>
                     <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
-                      *ngIf="locationForm.controls['longitude'].errors.pattern && checkSubmitStatus">
+                       *ngIf="locationForm.controls['longitude'].errors.pattern && checkSubmitStatus">
                       Please enter valid Longitude
                     </p>
                   </div>
@@ -169,67 +175,58 @@
               </fieldset>
             </div>
           </div>
-
           <div class="row">
+
             <div class="col-md-6">
-              <fieldset class="form-group form-field">
+              <fieldset class="form-group">
                 <label class="form-label">Description</label>
                 <mat-form-field>
-                  <textarea tabindex="9" rows="3" matInput name="description" formControlName="description" [(ngModel)]="locationObject.description" type="text" maxlength="50"
-                    class="form-control" placeholder="Description">
-                    </textarea> 
-                  
+                  <textarea matInput rows="3" class="form-control" formControlName="description" placeholder="Description" name="description" [(ngModel)]="locationObject['description']"
+                            maxlength="255"></textarea>
                 </mat-form-field>
               </fieldset>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Location Image</label><br>
-              <fieldset class="form-group form-field">
-
-
-                <label for="imageFile" class="upload-file">
-                  <input tabindex="10" formControlName="imageFile" #imageFile id="imageFile"  class="upload-image" (change)="handleImageInput($event)"
-                    name="imageFile" accept=".jpg, .jpeg, .png" type="file">
+              <mat-label>Location Image</mat-label>
+              <fieldset class="form-group">
+                <label for="myFile" class="upload-file" title=".jpg, .jpeg, .png">
+                  <input formControlName="imageFile" id="myFile" (change)="handleImageInput($event)" #myFile
+                         class="upload-image" type="file"
+                         accept=".jpg, .jpeg, .png" />
+                  <div class="form-control-feedback" *ngIf="locationForm.controls['imageFile'].errors">
+                    <p class="form-tooltip-error sm" [ngClass]="{'error':true}"
+                       *ngIf="locationForm.controls['imageFile'].errors.required && checkSubmitStatus">
+                      Upload Image
+                    </p>
+                  </div>
                 </label>
-
               </fieldset>
-              <fieldset *ngIf="!fileUrl" class="form-group">
+              <fieldset class="form-group">
                 <ul class="image-list ">
                   <li>
                     <div class="user-profle-image">
-                      <img alt="No Image Found" class="img-fluid" src="../../../../assets/images/noimage.svg">
+                      <img alt="" class="img-fluid" #locationImg
+                           src="{{locationObject['image'] == '00000000-0000-0000-0000-000000000000' || locationObject['image'] == null || locationObject['image'] == '' ? _appConstant.noImg:  locationObject['image']}}" />
                     </div>
-                  </li>
-                </ul>
-              </fieldset>
-              <fieldset *ngIf="fileUrl" class="form-group">
-                <ul class="image-list ">
-                  <li>
-                    <div class="user-profle-image">
-                      <img alt="" class="img-fluid" src={{fileUrl}}>
-                    </div>
-                    <span title="Remove Image" class="ng-star-inserted">
-                      <i (click)="deleteImgModel(image)" class="material-icons">clear</i>
+                    <span *ngIf="locationObject['image']">
+                      <i class="material-icons" (click)="imageRemove()">clear</i>
                     </span>
                   </li>
                 </ul>
               </fieldset>
               <p>{{fileName}}</p>
-              
             </div>
           </div>
-
-         
-
           <div class="row mt-4 mb-0">
             <div class="col-lg-12">
               <div class="form-field">
                 <div class="input-field ">
-                  <button mat-flat-button color="primary" class="text-white " title="{{buttonName}}" type="submit">
-                    {{buttonName}}
+                  <button mat-flat-button color="primary"
+                          class="text-white " title="{{buttonname}}" type="submit">
+                    {{buttonname}}
                   </button>
                   <button mat-flat-button color="primary" class="text-white m-l-10" [routerLink]="['/locations']"
-                    title="Cancel">
+                          title="Cancel">
                     Cancel
                   </button>
                 </div>

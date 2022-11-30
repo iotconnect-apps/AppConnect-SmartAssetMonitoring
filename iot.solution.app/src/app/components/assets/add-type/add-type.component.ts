@@ -127,9 +127,9 @@ export class AddTypeComponent implements OnInit {
         if (response.isSuccess === true) {
           this.spinner.hide();
           if (response.data.updatedBy != null || this.isEdit) {
-            this._notificationService.add(new Notification('success', "Asset type has been updated successfully."));
+            this._notificationService.add(new Notification('success', "Asset type updated successfully."));
           } else {
-            this._notificationService.add(new Notification('success', "Asset type has been added successfully."));
+            this._notificationService.add(new Notification('success', "Asset type created successfully."));
           }
           this.router.navigate(['/assets-types']);
         } else {

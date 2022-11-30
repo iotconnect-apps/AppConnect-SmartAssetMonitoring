@@ -12,7 +12,7 @@ import { CustomValidators } from '../../helpers/custom.validators';
   styleUrls: ['./my-profile.component.css']
 })
 export class MyProfileComponent implements OnInit {
-  public contactNoError:boolean=false;
+  public contactNoError: boolean = false;
   public mask = {
     guide: true,
     showMask: false,
@@ -26,9 +26,9 @@ export class MyProfileComponent implements OnInit {
     contactNo: '',
     timezoneGuid: '',
     email: null,
-    companyGuid:'',
-    guid:'',
-    password:''
+    companyGuid: '',
+    guid: '',
+    password: ''
 
   };
   moduleName = "My Profile";
@@ -59,8 +59,8 @@ export class MyProfileComponent implements OnInit {
     }
     else {
       this.getCurrentUserInfo();
+      this.getTimezoneList();
     }
-    this.getTimezoneList();
   }
 
   /**
@@ -76,7 +76,7 @@ export class MyProfileComponent implements OnInit {
       entityGuid: [null],
       email: [null],
       roleGuid: [null],
-      password:[""]
+      password: [""]
     }, {
       validator: CustomValidators.checkPhoneValue('contactNo')
     });
@@ -152,11 +152,11 @@ export class MyProfileComponent implements OnInit {
     let contactNo = this.userForm.value.contactNo.replace("(", "")
     let contactno = contactNo.replace(")", "")
     let finalcontactno = contactno.replace("-", "")
-    if(finalcontactno.match(/^0+$/)){
-      this.contactNoError=true;
+    if (finalcontactno.match(/^0+$/)) {
+      this.contactNoError = true;
       return
     } else {
-      this.contactNoError=false;
+      this.contactNoError = false;
     }
     if (this.userForm.status === "VALID") {
       this.spinner.show();
@@ -198,11 +198,11 @@ export class MyProfileComponent implements OnInit {
     let contactNo = this.userForm.value.contactNo.replace("(", "")
     let contactno = contactNo.replace(")", "")
     let finalcontactno = contactno.replace("-", "")
-    if(finalcontactno.match(/^0+$/)){
-      this.contactNoError=true;
+    if (finalcontactno.match(/^0+$/)) {
+      this.contactNoError = true;
       return
     } else {
-      this.contactNoError=false;
+      this.contactNoError = false;
     }
     if (this.userForm.status === "VALID") {
       this.spinner.show();

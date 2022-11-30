@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Entity = iot.solution.entity;
 using Response = iot.solution.entity.Response;
 
@@ -14,8 +15,8 @@ namespace component.helper.Interface
         Response.SubscriptionPlanResponse GetSubscriptionPlans(string solutionID);
         Entity.BaseResponse<bool> ValidateCompany(Entity.ValidateCompanyRequest requestData);
         Entity.SearchResult<List<Entity.SubscriberData>> SubscriberList(string solutionID, Entity.SearchRequest request);
-        Entity.SaveCompanyResponse CreateCompany(Entity.SaveCompanyRequest requestData);      
-       Entity.SubsciberCompanyDetails GetSubscriberDetails(string solutionCode, string userEmail);
+        Entity.SaveCompanyResponse CreateCompany(Entity.SaveCompanyRequest requestData);
+        Entity.SubsciberCompanyDetails GetSubscriberDetails(string solutionCode, Guid consumerId);
         Entity.LastSyncResponse GetLastSyncDetails();
 
     }

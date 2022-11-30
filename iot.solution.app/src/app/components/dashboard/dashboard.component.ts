@@ -148,7 +148,7 @@ export class DashboardComponent implements OnInit,OnDestroy {
 		this.sideBarSubscription = this.dynamicDashboardService.isToggleSidebarObs.subscribe((toggle) => {
 			console.log("Sidebar clicked");
 			if(this.isDynamicDashboard && this.dashboardList.length > 0){
-	            /*this.spinner.show();
+	            this.spinner.show();
 	            this.changedOptions();
 				let cond = false;
 				Observable.interval(700)
@@ -158,7 +158,7 @@ export class DashboardComponent implements OnInit,OnDestroy {
 					cond = true;
 					this.checkResponsiveness();
 					this.spinner.hide();
-				});*/
+				});
 			}
 		})
 		/*Dynamic Dashboard Code*/
@@ -582,24 +582,30 @@ export class DashboardComponent implements OnInit,OnDestroy {
 		if (this.options.api && this.options.api.optionsChanged) {
 			this.options.api.optionsChanged();
 		}
-		/*let cond = false;
+		let cond = false;
     	Observable.interval(500)
 		.takeWhile(() => !cond)
 		.subscribe(i => {
 			cond = true;
 			this.checkResponsiveness();
-		});*/
+		});
 	}
 
 	checkResponsiveness(){
 		if(this.gridster){
-			let tempWidth = 20;
-			if(this.gridster.curWidth >= 640 && this.gridster.curWidth <= 1200){
-				/*tempWidth = Math.floor((this.gridster.curWidth / 60));
-				this.options.fixedColWidth = tempWidth;*/
+			let fixedColWidth = 20;
+			let tempWidth = parseFloat((((this.gridster.curWidth * fixedColWidth) / (fixedColWidth * this.gridster.columns)).toFixed(2)).toString());
+			tempWidth = (tempWidth - 0.01);
+			/*console.log("Cur width => ",this.gridster.curWidth);
+			console.log("tempWidth => ",tempWidth);
+			console.log("Total width => ",(20 * this.gridster.columns));
+			console.log("New cols => ",(tempWidth * this.gridster.columns));*/
+			if(this.gridster.curWidth >= 640 ){
+				//tempWidth = Math.floor((this.gridster.curWidth / 60));
+				this.options.fixedColWidth = tempWidth;
 			}
 			else{
-				this.options.fixedColWidth = tempWidth;
+				this.options.fixedColWidth = fixedColWidth;
 			}
 			for (var i = 0; i <= (this.dashboardWidgets.length - 1); i++) {
 				if(this.gridster.curWidth < 640){
@@ -615,6 +621,7 @@ export class DashboardComponent implements OnInit,OnDestroy {
 				this.resizeEvent.emit(this.dashboardWidgets[i]);
 			}
 			this.changedOptions();
+			this.changeDetector.detectChanges();
 		}
 	}
 

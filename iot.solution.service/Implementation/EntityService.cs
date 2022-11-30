@@ -2,8 +2,10 @@
 using component.logger;
 using iot.solution.common;
 using iot.solution.model.Repository.Interface;
+using iot.solution.service.AppSetting;
 using iot.solution.service.Interface;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,15 +25,18 @@ namespace iot.solution.service.Implementation
         private readonly IDeviceRepository _deviceRepository;
         private readonly IDeviceTypeRepository _deviceTypeRepository;
         private readonly IDeviceService _deviceService;
+        private readonly IMediaService _mediaService;
 
-        public EntityService(IEntityRepository entityRepository, ILogger logger, IDeviceRepository deviceRepository, IDeviceService deviceService, IDeviceTypeRepository deviceTypeRepository)
+        public EntityService(IEntityRepository entityRepository, ILogger logger, IDeviceRepository deviceRepository,
+            IDeviceService deviceService, IDeviceTypeRepository deviceTypeRepository, IMediaService mediaService)
         {
             _logger = logger;
             _entityRepository = entityRepository;
             _deviceRepository = deviceRepository;
             _deviceService = deviceService;
             _deviceTypeRepository = deviceTypeRepository;
-            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, SolutionConfiguration.Configuration.EnvironmentCode, SolutionConfiguration.Configuration.SolutionKey);
+            _mediaService = mediaService;
+            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EnvironmentCode.ToString()), ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SolutionKey.ToString()));
         }
         public List<Entity.EntityWithCounts> Get()
         {
@@ -53,6 +58,15 @@ namespace iot.solution.service.Implementation
                 Entity.EntityDetail response = _entityRepository.FindBy(r => r.Guid == id).Select(p => Mapper.Configuration.Mapper.Map<Entity.EntityDetail>(p)).FirstOrDefault();
                 if (response != null)
                 {
+                    int size = MediaSize.Default.GetHashCode() + MediaSize.Small.GetHashCode();
+
+                    if (response.ParentEntityGuid == null)
+                        response.Image = _mediaService.GetImage(EntityTypeEnum.Location.GetHashCode(), response.Guid.ToString(), 1,
+                                        size, "SmartAssetMonitoringLocation", "media");
+                    else
+                        response.Image = _mediaService.GetImage(EntityTypeEnum.Zone.GetHashCode(), response.Guid.ToString(), 1,
+                                    size, "SmartAssetMonitoringZone", "media");
+
                     var deviceResult = _deviceService.GetDeviceCountersByEntity(id);
                     if (deviceResult.IsSuccess && deviceResult.Data != null)
                     {
@@ -90,8 +104,39 @@ namespace iot.solution.service.Implementation
                             if (request.ImageFile != null)
                             {
                                 // upload image                                     
-                                dbEntity.Image = SaveEntityImage(request.Guid, request.ImageFile);
+                                //  dbEntity.Image = SaveEntityImage(request.Guid, request.ImageFile);
+
+                                if (request.ParentEntityGuid == SolutionConfiguration.EntityGuid)
+                                {
+                                    int size = MediaSize.Default.GetHashCode() + MediaSize.Small.GetHashCode();
+                                    var response = _mediaService.AddImage(request.Guid, request.ImageFile, "SmartAssetMonitoringLocation", EntityTypeEnum.Location.GetHashCode(),
+                                        1, size, "media");
+
+                                    if (!response.isSuccess)
+                                    {
+                                        actionStatus.Success = false;
+                                        actionStatus.Message = response.response;
+                                        return actionStatus;
+                                    }
+
+                                }
+                                else
+                                {
+                                    int size = MediaSize.Default.GetHashCode() + MediaSize.Small.GetHashCode();
+                                    var response = _mediaService.AddImage(request.Guid, request.ImageFile, "SmartAssetMonitoringZone", EntityTypeEnum.Zone.GetHashCode(),
+                                        1, size, "media");
+
+                                    if (!response.isSuccess)
+                                    {
+                                        actionStatus.Success = false;
+                                        actionStatus.Message = response.response;
+                                        return actionStatus;
+                                    }
+
+                                }
+
                             }
+
                             dbEntity.Guid = request.Guid;
                             dbEntity.CompanyGuid = SolutionConfiguration.CompanyId;
                             dbEntity.CreatedDate = DateTime.Now;
@@ -144,16 +189,107 @@ namespace iot.solution.service.Implementation
                         var dbEntity = Mapper.Configuration.Mapper.Map(request, olddbEntity);
                         if (request.ImageFile != null)
                         {
-                            if (File.Exists(SolutionConfiguration.UploadBasePath + dbEntity.Image) && request.ImageFile.Length > 0)
+                            string mediaUrl = string.Empty;
+                            int size = MediaSize.Default.GetHashCode() + MediaSize.Small.GetHashCode();
+
+                            if (request.ParentEntityGuid == SolutionConfiguration.EntityGuid)
+                                mediaUrl = _mediaService.GetImage(EntityTypeEnum.Location.GetHashCode(), request.Guid.ToString(), 1,
+                                    size, "SmartAssetMonitoringLocation", "media");
+                            else
+                                mediaUrl = _mediaService.GetImage(EntityTypeEnum.Zone.GetHashCode(), request.Guid.ToString(), 1,
+                                        size, "SmartAssetMonitoringZone", "media");
+
+                            string image = string.Empty;
+
+                            if (!string.IsNullOrEmpty(mediaUrl))
                             {
-                                //if already exists image then delete  old image from server
-                                File.Delete(SolutionConfiguration.UploadBasePath + dbEntity.Image);
+                                if (request.ParentEntityGuid == SolutionConfiguration.EntityGuid)
+                                {
+                                    string mediaId = string.Empty;
+                                    mediaId = _mediaService.GetImageMediaId(EntityTypeEnum.Location.GetHashCode(), request.Guid.ToString(), 1,
+                                    size, "SmartAssetMonitoringLocation", "media");
+
+                                    if (!string.IsNullOrEmpty(mediaId))
+                                    {
+                                        var response = _mediaService.UpdateImage(request.Guid, request.ImageFile, "SmartAssetMonitoringLocation", EntityTypeEnum.Location.GetHashCode(),
+                                           1, size, "media", mediaId);
+
+                                        if (!response.isSuccess)
+                                        {
+                                            actionStatus.Success = false;
+                                            actionStatus.Message = response.response;
+                                            return actionStatus;
+                                        }
+
+                                    }
+
+                                }
+                                else
+                                {
+                                    string mediaId = string.Empty;
+                                    mediaId = _mediaService.GetImageMediaId(EntityTypeEnum.Zone.GetHashCode(), request.Guid.ToString(), 1,
+                                        size, "SmartAssetMonitoringZone", "media");
+
+                                    if (!string.IsNullOrEmpty(mediaId))
+                                    {
+                                        var response = _mediaService.UpdateImage(request.Guid, request.ImageFile, "SmartAssetMonitoringZone", EntityTypeEnum.Zone.GetHashCode(),
+                                       1, size, "media", mediaId);
+
+                                        if (!response.isSuccess)
+                                        {
+                                            actionStatus.Success = false;
+                                            actionStatus.Message = response.response;
+                                            return actionStatus;
+                                        }
+                                    }
+
+                                }
                             }
-                            if (request.ImageFile.Length > 0)
+                            else
                             {
-                                // upload new image                                     
-                                dbEntity.Image = SaveEntityImage(request.Guid, request.ImageFile);
+                                if (request.ParentEntityGuid == SolutionConfiguration.EntityGuid)
+                                {
+
+                                    var response = _mediaService.AddImage(request.Guid, request.ImageFile, "SmartAssetMonitoringLocation", EntityTypeEnum.Location.GetHashCode(),
+                                        1, size, "mediadel");
+
+                                    if (!response.isSuccess)
+                                    {
+                                        actionStatus.Success = false;
+                                        actionStatus.Message = response.response;
+                                        return actionStatus;
+                                    }
+
+                                }
+                                else
+                                {
+
+                                    var response = _mediaService.AddImage(request.Guid, request.ImageFile, "SmartAssetMonitoringZone", EntityTypeEnum.Zone.GetHashCode(),
+                                        1, size, "media");
+
+                                    if (!response.isSuccess)
+                                    {
+                                        actionStatus.Success = false;
+                                        actionStatus.Message = response.response;
+                                        return actionStatus;
+                                    }
+
+                                }
+
                             }
+
+
+
+                            //if (File.Exists(SolutionConfiguration.UploadBasePath + dbEntity.Image) && request.ImageFile.Length > 0)
+                            //{
+                            //    //if already exists image then delete  old image from server
+                            //    File.Delete(SolutionConfiguration.UploadBasePath + dbEntity.Image);
+                            //}
+                            //if (request.ImageFile.Length > 0)
+                            //{
+                            //    // upload new image                                     
+                            //    dbEntity.Image = SaveEntityImage(request.Guid, request.ImageFile);
+                            //}
                         }
                         else
                         {
@@ -227,7 +363,7 @@ namespace iot.solution.service.Implementation
                 var dbChildEntity = _entityRepository.FindBy(x => x.ParentEntityGuid.Equals(id) && !x.IsDeleted).FirstOrDefault();
                 var dbDevice = _deviceRepository.FindBy(x => x.EntityGuid.Equals(id) && !x.IsDeleted || (dbChildEntity != null && x.EntityGuid.Equals(dbChildEntity.Guid))).FirstOrDefault();
                 var dbDeviceType = _deviceTypeRepository.FindBy(x => x.EntityGuid.Equals(id) && !x.IsDeleted).FirstOrDefault();
-                if (dbDevice == null && dbChildEntity == null && dbDeviceType==null)
+                if (dbDevice == null && dbChildEntity == null && dbDeviceType == null)
                 {
                     var device = _iotConnectClient.Device.AllDevice(new IoTConnect.Model.AllDeviceModel { entityGuid = id.ToString() }).Result;
                     if (device != null && device.Data != null && device.Data.Any())
@@ -241,6 +377,32 @@ namespace iot.solution.service.Implementation
                         var deleteEntityResult = _iotConnectClient.Entity.Delete(id.ToString()).Result;
                         if (deleteEntityResult != null && deleteEntityResult.status)
                         {
+
+                            string mediaUrl = string.Empty;
+                            int size = MediaSize.Small.GetHashCode() + MediaSize.Medium.GetHashCode() + MediaSize.Large.GetHashCode();
+
+                            if (dbEntity.ParentEntityGuid == null)
+                                mediaUrl = _mediaService.GetImage(EntityTypeEnum.Location.GetHashCode(), dbEntity.Guid.ToString(), 1,
+                                    size, "SmartAssetMonitoringLocation", "media");
+                            else
+                                mediaUrl = _mediaService.GetImage(EntityTypeEnum.Zone.GetHashCode(), dbEntity.Guid.ToString(), 1,
+                                        size, "SmartAssetMonitoringZone", "media");
+
+                            if (!string.IsNullOrEmpty(mediaUrl))
+                            {
+                                bool deleteStatus = false;
+                                if (dbEntity.ParentEntityGuid == null)
+                                    deleteStatus = _mediaService.DeleteImage(dbEntity.Image, dbEntity.Guid.ToString(), EntityTypeEnum.Location.GetHashCode(),
+                                   1, "media", "SmartAssetMonitoringLocation");
+                                else
+                                    deleteStatus = _mediaService.DeleteImage(dbEntity.Image, dbEntity.Guid.ToString(), EntityTypeEnum.Zone.GetHashCode(),
+                                       1, "media", "SmartAssetMonitoringZone");
+
+                                if (!deleteStatus)
+                                    _logger.Error($"Image is not deleted from Media. EntityValue =" + dbEntity.Guid.ToString());
+                            }
+
+
                             dbEntity.IsDeleted = true;
                             dbEntity.UpdatedDate = DateTime.Now;
                             dbEntity.UpdatedBy = SolutionConfiguration.CurrentUserId;
@@ -303,7 +465,19 @@ namespace iot.solution.service.Implementation
                     throw new NotFoundCustomException($"{CommonException.Name.NoRecordsFound} : Entity");
                 }
 
-                bool deleteStatus = DeleteEntityImage(id, dbEntity.Image);
+                //bool deleteStatus = DeleteEntityImage(id, dbEntity.Image);
+                bool deleteStatus = false;
+                if (dbEntity.ParentEntityGuid == null)
+                    deleteStatus = _mediaService.DeleteImage(dbEntity.Image, id.ToString(), EntityTypeEnum.Location.GetHashCode(),
+                   1, "media", "SmartAssetMonitoringLocation");
+                else
+                    deleteStatus = _mediaService.DeleteImage(dbEntity.Image, id.ToString(), EntityTypeEnum.Zone.GetHashCode(),
+                       1, "media", "SmartAssetMonitoringZone");
+
+                if (!deleteStatus)
+                    _logger.Error($"Image is not deleted from Media. EntityValue =" + dbEntity.Guid.ToString());
+
+
                 if (deleteStatus)
                 {
                     dbEntity.Image = "";
@@ -347,8 +521,19 @@ namespace iot.solution.service.Implementation
                     Items = result.Items.Select(p => Mapper.Configuration.Mapper.Map<Entity.EntityListItem>(p)).ToList(),
                     Count = result.Count
                 };
+
+                int size = MediaSize.Default.GetHashCode() + MediaSize.Small.GetHashCode();
+
                 foreach (var entity in response.Items)
                 {
+                    if (request.EntityId == Guid.Empty)
+                        entity.Image = _mediaService.GetImage(EntityTypeEnum.Location.GetHashCode(), entity.Guid.ToString(), 1,
+                                        size, "SmartAssetMonitoringLocation", "media");
+                    else
+                        entity.Image = _mediaService.GetImage(EntityTypeEnum.Zone.GetHashCode(), entity.Guid.ToString(), 1,
+                                    size, "SmartAssetMonitoringZone", "media");
+
+
                     var deviceResult = _deviceService.GetDeviceCountersByEntity(entity.Guid);
 
                     if (deviceResult.IsSuccess && deviceResult.Data != null)
@@ -356,7 +541,7 @@ namespace iot.solution.service.Implementation
                         entity.TotalDevices = deviceResult.Data.counters.total;
                         entity.TotalConnected = deviceResult.Data.counters.connected;
                         entity.TotalDisconnected = deviceResult.Data.counters.disConnected;
-                    }                   
+                    }
                 }
                 return response;
             }
@@ -379,8 +564,8 @@ namespace iot.solution.service.Implementation
 
                 var dbChildEntity = _entityRepository.FindBy(x => x.ParentEntityGuid.Equals(id) && !x.IsDeleted).FirstOrDefault();
                 var dbDevice = _deviceRepository.FindBy(x => x.EntityGuid.Equals(id) || (dbChildEntity != null && x.EntityGuid.Equals(dbChildEntity.Guid))).FirstOrDefault();
-               var dbDeviceType = _deviceTypeRepository.FindBy(x => x.EntityGuid.Equals(id) && !x.IsDeleted).FirstOrDefault();
-                if (dbDevice == null && dbChildEntity == null && dbDeviceType==null)
+                var dbDeviceType = _deviceTypeRepository.FindBy(x => x.EntityGuid.Equals(id) && !x.IsDeleted).FirstOrDefault();
+                if (dbDevice == null && dbChildEntity == null && dbDeviceType == null)
                 {
                     dbEntity.IsActive = status;
                     dbEntity.UpdatedDate = DateTime.Now;
@@ -421,12 +606,12 @@ namespace iot.solution.service.Implementation
             Entity.BaseResponse<Entity.EntityDashboardOverviewResponse> result = new Entity.BaseResponse<Entity.EntityDashboardOverviewResponse>(true);
             try
             {
-                listResult = _entityRepository.GetStatistics(entityId,currentDate, timeZone);               
+                listResult = _entityRepository.GetStatistics(entityId, currentDate, timeZone);
                 if (listResult.Data.Count > 0)
                 {
                     result.IsSuccess = true;
                     result.Data = listResult.Data[0];
-                    result.LastSyncDate = listResult.LastSyncDate;               
+                    result.LastSyncDate = listResult.LastSyncDate;
                 }
             }
             catch (Exception ex)

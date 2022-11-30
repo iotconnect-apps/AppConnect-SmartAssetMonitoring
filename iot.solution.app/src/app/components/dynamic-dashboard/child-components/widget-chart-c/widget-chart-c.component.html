@@ -1,10 +1,14 @@
 <div class="drag-body dashboard-widget m-b-30">
 	<div class="panel-heading" [ngStyle]="{'background':widget?.widgetProperty?.background}">
-		<h5 class="panel-title w-100" [ngStyle]="{'font-size':widget?.widgetProperty?.fontSize+'px', 'font-family':widget?.widgetProperty?.fontFamily, 'color':widget?.widgetProperty?.fontColor}" matTooltip="{{widget?.widgetProperty?.title}}" matTooltipPosition="right"> {{widget?.widgetProperty?.title}} </h5>
+		<h5 class="panel-title w-auto p-r-0"
+			[ngStyle]="{'font-size':widget?.widgetProperty?.fontSize+'px', 'font-family':widget?.widgetProperty?.fontFamily, 'color':widget?.widgetProperty?.fontColor}"
+			matTooltip="{{widget?.widgetProperty?.title}}" matTooltipPosition="right"> {{widget?.widgetProperty?.title}}
+		</h5>
 		<div class="ml-auto">
 			<form>
-				<mat-form-field class="mb-0 m-r-40">
-					<mat-select placeholder="Select" (selectionChange)="changeFilterAssetType($event)" [(value)]="selectedValue">
+				<mat-form-field class="mb-0">
+					<mat-select placeholder="Select" (selectionChange)="changeFilterAssetType($event)"
+						[(value)]="selectedValue">
 						<mat-option *ngFor="let item of filterType" [value]="item?.value">
 							{{item.name}}
 						</mat-option>
@@ -14,9 +18,10 @@
 		</div>
 	</div>
 	<mat-card class="dashboard-card mat-card p-0">
-		<div class="chart-data">
+		<div class="chart-data h-100">
 			<google-chart *ngIf="!noRecordFoundInUsageByAssetType" #cchart [data]="pieChart"></google-chart>
-			<div *ngIf="noRecordFoundInUsageByAssetType" class="text-center d-flex align-items-center justify-content-center">
+			<div *ngIf="noRecordFoundInUsageByAssetType"
+				class="h-100 text-center d-flex align-items-center justify-content-center ">
 				No data found
 			</div>
 		</div>

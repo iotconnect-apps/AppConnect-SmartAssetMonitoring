@@ -1,9 +1,9 @@
 <div class="drag-body dashboard-widget">
 	<div class="panel-heading" [ngStyle]="{'background':widget?.widgetProperty?.background}">
-		<h5 class="panel-title" matTooltip="{{widget?.widgetProperty?.title}}" matTooltipPosition="right" [ngStyle]="{'font-size':widget?.widgetProperty?.fontSize+'px', 'font-family':widget?.widgetProperty?.fontFamily, 'color':widget?.widgetProperty?.fontColor}"> {{widget?.widgetProperty?.title}} </h5>
+		<h5 class="panel-title w-auto p-r-0" matTooltip="{{widget?.widgetProperty?.title}}" matTooltipPosition="right" [ngStyle]="{'font-size':widget?.widgetProperty?.fontSize+'px', 'font-family':widget?.widgetProperty?.fontFamily, 'color':widget?.widgetProperty?.fontColor}"> {{widget?.widgetProperty?.title}} </h5>
 		<div class="ml-auto">
 			<form>
-				<mat-form-field class="mb-0 m-r-40">
+				<mat-form-field class="mb-0">
 					<mat-select placeholder="Select" (selectionChange)="changeFilterAsset($event)" [(value)]="selected">
 						<mat-option *ngFor="let item of filterType" [value]="item?.value">
 							{{item.name}}

@@ -21,7 +21,7 @@ export class UserService {
 	}
 	getUserDetailByToken(token) {
 		const parameter = {
-			"token" :token
+			"token": token
 		}
 		return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/account/identity', parameter).map(response => {
 			return response;
@@ -30,7 +30,7 @@ export class UserService {
 	getUserlist(parameters) {
 		const parameter = {
 			params: {
-				'entityGuid':parameters.entityGuid,
+				'entityGuid': parameters.entityGuid,
 				'pageNo': parameters.pageNumber + 1,
 				'pageSize': parameters.pageSize,
 				'searchText': parameters.searchText,
@@ -140,8 +140,8 @@ export class UserService {
 				// store user details and jwt token in the local storage to keep the user logged in between page refreshes
 				localStorage.setItem('currentUser', JSON.stringify(response.data));
 				// api/account/adminlogin
-				this.cookieService.set(this.cookieName + 'access_token',response.data.access_token);
-				this.cookieService.set(this.cookieName + 'company_id',response.data.userDetail.companyId);
+				this.cookieService.set(this.cookieName + 'access_token', response.data.access_token);
+				this.cookieService.set(this.cookieName + 'company_id', response.data.userDetail.companyId);
 				// get(this.cookieName + 'access_token')
 			}
 			return response;
@@ -153,10 +153,10 @@ export class UserService {
 			headers: {
 				'Content-Type': 'application/json',
 				'Authorization': 'Bearer ' + this.cookieService.get(this.cookieName + 'access_token'),
-				'company-id':this.cookieService.get(this.cookieName + 'company_id')
+				'company-id': this.cookieService.get(this.cookieName + 'company_id')
 			}
 		};
-		return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/adminuser/manage', data,configHeader).map(response => {
+		return this.httpClient.post<any>(this.apiServer.baseUrl + 'api/adminuser/manage', data, configHeader).map(response => {
 			return response;
 		});
 	}
@@ -172,7 +172,7 @@ export class UserService {
 			headers: {
 				'Content-Type': 'application/json',
 				'Authorization': 'Bearer ' + this.cookieService.get(this.cookieName + 'access_token'),
-				'company-id':this.cookieService.get(this.cookieName + 'company_id')
+				'company-id': this.cookieService.get(this.cookieName + 'company_id')
 			}
 		};
 
@@ -182,10 +182,11 @@ export class UserService {
 	}
 	adminchangeStatus(id, isActive) {
 		let status = isActive == true ? false : true;
-		return this.httpClient.put<any>(this.apiServer.baseUrl + 'api/adminuser/updatestatus/' + id + '/' + status, {}).map(response => {
+		return this.httpClient.put<any>(this.apiServer.baseUrl + 'api/adminuser/updatestatus?id=' + id + '&status=' + status, {}).map(response => {
 			return response;
 		});
 	}
+	
 	getAdminUserlist(parameters) {
 		let currentUser = JSON.parse(localStorage.getItem('currentUser'));
 		var configHeader = {

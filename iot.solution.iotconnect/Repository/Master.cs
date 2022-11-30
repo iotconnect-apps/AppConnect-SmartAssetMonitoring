@@ -43,10 +43,10 @@ namespace IoTConnect.Common
         /// </summary>
         /// <param name="call">Http call.</param>
         /// <returns></returns>
-        private void HandleFlurlErrorAsync(HttpCall call)
+        private void HandleFlurlErrorAsync(FlurlCall call)
         {
             call.ExceptionHandled = true;
-            IoTConnectException ioTConnectErrorResponse = JsonConvert.DeserializeObject<IoTConnectException>(call.Response.Content.ReadAsStringAsync().Result);
+            IoTConnectException ioTConnectErrorResponse = JsonConvert.DeserializeObject<IoTConnectException>(call.HttpResponseMessage.Content.ReadAsStringAsync().Result);
             throw ioTConnectErrorResponse;
         }
         #endregion

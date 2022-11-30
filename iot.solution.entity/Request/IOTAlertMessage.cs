@@ -25,8 +25,8 @@ namespace iot.solution.entity
         public string ParentEntityGuid { get; set; }
         public string EntityGuid { get; set; }
         public string DeviceGuid { get; set; }
-        public int? PageNumber { get; set; } = 1;
-        public int? PageSize { get; set; } = 10;
+        public int? PageNumber { get; set; } = -1;
+        public int? PageSize { get; set; } = -1;
         public string OrderBy { get; set; } = "";
     }
 

@@ -8,6 +8,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using Entity = iot.solution.entity;
 using Microsoft.Extensions.Configuration;
+using iot.solution.common;
+using iot.solution.service.AppSetting;
 
 namespace host.iot.solution.Controllers
 {
@@ -133,7 +135,7 @@ namespace host.iot.solution.Controllers
                 var loginResult = _adminUserService.AdminLogin(request);
                 if (loginResult != null && loginResult.Success)
                 {
-                    var secretKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(component.helper.SolutionConfiguration.Configuration.Token.SecurityKey));
+                    var secretKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenSecurityKey.ToString())));
                     List<System.Security.Claims.Claim> clm = new List<System.Security.Claims.Claim>();
 
                     var propertyInfoCompanyId = loginResult.Data.GetType().GetProperty("CompanyGuid");
@@ -152,8 +154,8 @@ namespace host.iot.solution.Controllers
                     clm.Add(new System.Security.Claims.Claim("IOT_CONNECT", "AdminUser"));
                     clm.Add(new System.Security.Claims.Claim("CURRENT_USERID", currentUserId.ToString().ToUpper()));
                     var tokeOptions = new JwtSecurityToken(
-                        issuer: component.helper.SolutionConfiguration.Configuration.Token.Issuer.ToLower(),
-                        audience: component.helper.SolutionConfiguration.Configuration.Token.Audience.ToLower(),
+                        issuer: ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenIssuer.ToString()).ToLower(),
+                        audience: ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenAudience.ToString()).ToLower(),
                         claims: clm,
                         expires: DateTime.Now.AddMinutes(30),
                         signingCredentials: new Microsoft.IdentityModel.Tokens.SigningCredentials(secretKey, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256)
@@ -192,12 +194,12 @@ namespace host.iot.solution.Controllers
         {
             if (response != null)
             {
-                var secretKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(component.helper.SolutionConfiguration.Configuration.Token.SecurityKey));
+                var secretKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenSecurityKey.ToString())));
                 List<System.Security.Claims.Claim> clm = new List<System.Security.Claims.Claim>();
                 clm.Add(new System.Security.Claims.Claim("IOT_CONNECT", response.access_token));
                 var tokeOptions = new JwtSecurityToken(
-                    issuer: component.helper.SolutionConfiguration.Configuration.Token.Issuer.ToLower(),
-                    audience: component.helper.SolutionConfiguration.Configuration.Token.Audience.ToLower(),
+                    issuer: ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenIssuer.ToString()).ToLower(),
+                    audience: ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenAudience.ToString()).ToLower(),
                     claims: clm,
                     expires: DateTime.Now.AddMinutes(30),
                     signingCredentials: new Microsoft.IdentityModel.Tokens.SigningCredentials(secretKey, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256)

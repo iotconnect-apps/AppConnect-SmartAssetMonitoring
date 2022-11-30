@@ -11,6 +11,9 @@ using Entity = iot.solution.entity;
 using IOT = IoTConnect.Model;
 using Model = iot.solution.model.Models;
 using LogHandler = component.services.loghandler;
+using Microsoft.Extensions.Configuration;
+using iot.solution.service.AppSetting;
+
 namespace iot.solution.service.Data
 {
     public class RoleService : IRoleService
@@ -25,7 +28,7 @@ namespace iot.solution.service.Data
             _logger = logger;
             _roleRepository = userRoleRepository;
             _userRepository = userRepository;
-            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, SolutionConfiguration.Configuration.EnvironmentCode, SolutionConfiguration.Configuration.SolutionKey);
+            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EnvironmentCode.ToString()), ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SolutionKey.ToString()));
         }
 
         public List<Entity.Role> Get()
@@ -53,7 +56,7 @@ namespace iot.solution.service.Data
             }
 
         }
-        
+
         public Entity.ActionStatus Manage(Entity.Role request)
         {
             Entity.ActionStatus actionStatus = new Entity.ActionStatus(true);
@@ -71,10 +74,14 @@ namespace iot.solution.service.Data
                         request.Guid = Guid.Parse(addRoleResult.data.newid.ToUpper());
 
                         var dbRole = Mapper.Configuration.Mapper.Map<Entity.Role, Model.Role>(request);
-                        var olddbRole = _roleRepository.FindBy(x => (x.Guid.Equals(request.Guid) || x.Name.Equals(request.Name)) && x.CompanyGuid.Equals(SolutionConfiguration.CompanyId) ).FirstOrDefault();
-                        if (olddbRole != null )
+                        var olddbRole = _roleRepository.FindBy(x => (x.Guid.Equals(request.Guid) || x.Name.Equals(request.Name)) && x.CompanyGuid.Equals(SolutionConfiguration.CompanyId)).FirstOrDefault();
+                        if (olddbRole != null)
                         {
-                            //Update Deleted Role in solution DB                           
+                            //Update Deleted Role in solution DB
+
+                            if (olddbRole.IsActive == false)
+                                UpdateStatus(request.Guid, true);
+
                             solutionkeys = new List<string>();
                             solutionkeys.Add(SolutionConfiguration.SolutionId.ToString());
                             var updateModel = new IOT.UpdateRoleModel() { name = request.Name, description = request.Description, solutions = solutionkeys };
@@ -83,12 +90,12 @@ namespace iot.solution.service.Data
 
                             if (updateEntityResult != null && updateEntityResult.status)
                             {
-                                if (olddbRole.Guid.Equals(request.Guid)) 
+                                if (olddbRole.Guid.Equals(request.Guid))
                                 {
                                     dbRole.Guid = Guid.Empty;
                                 }
                                 dbRole = Mapper.Configuration.Mapper.Map(request, olddbRole);
-                               
+
                                 dbRole.CreatedBy = olddbRole.CreatedBy;
                                 dbRole.CreatedDate = olddbRole.CreatedDate;
                                 dbRole.UpdatedDate = DateTime.Now;
@@ -112,7 +119,7 @@ namespace iot.solution.service.Data
                         }
                         else
                         {
-                           
+
                             dbRole.Guid = request.Guid;
                             dbRole.CompanyGuid = SolutionConfiguration.CompanyId;
                             dbRole.CreatedDate = DateTime.Now;
@@ -151,7 +158,7 @@ namespace iot.solution.service.Data
                     if (updateEntityResult != null && updateEntityResult.status)
                     {
                         var dbRole = Mapper.Configuration.Mapper.Map(request, olddbRole);
-                      
+
                         dbRole.CreatedBy = olddbRole.CreatedBy;
                         dbRole.CreatedDate = olddbRole.CreatedDate;
                         dbRole.UpdatedDate = DateTime.Now;

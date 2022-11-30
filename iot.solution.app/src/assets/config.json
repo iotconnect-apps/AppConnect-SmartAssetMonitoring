@@ -1,15 +1,17 @@
 {
   "env": {
-      "name": ""
+    "name": "uat"
   },
   "apiServer": {
-    "baseUrl": "[YOUR API URL]"
+    "baseUrl": "{YOURAPIURL}/]",
+    "googleMapApiKey": "{Google MAP API Key}",
+    "SignalRDataUrl": "{YOURAPIURL}"
   },
   "IdsServer": {
     "IDSAuthority": "https://login.iotconnect.io",
-    "IDSClientID": "iotconnect.qa",
-    "IDSScope": "openid profile iotconnect.user.api.fullaccess iotconnect.device.api.fullaccess iotconnect.firmware.api.fullaccess iotconnect.file.api.fullaccess iotconnect.master.api.fullaccess iotconnect.auth.api.fullaccess iotconnect.authorize.api.fullaccess iotconnect.company.api.fullaccess iotconnect.config.api.fullaccess iotconnect.event.api.fullaccess iotconnect.scheduler.api.fullaccess iotconnect.simulator.api.fullaccess iotconnect.telemetry.api.fullaccess iotconnect.solution.api.fullaccess",
-    "IDSArcValue": "solutionCode:[YOUR SOLUTION GUID]",
-    "webUrl": "[YOUR SOLUTION WEB URL]"
+    "IDSClientID": "{IoTConnect.CliendId}", // {for Avnet Instance {iotconnect.avnet}, for Production {iotconnect}}
+    "IDSScope": "openid profile iotconnect.api.fullaccess",
+    "IDSArcValue": "solutionCode:{yoursolutionguid}",
+    "webUrl": "{WebPORTALURL}"
   }
 }

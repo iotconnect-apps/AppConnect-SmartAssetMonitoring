@@ -48,16 +48,16 @@
               <br />
               <div class="row">
                 <div class="col-lg-6">
-                <div class="connected-disconnected-item connected">
-                  <div class="connected-disconnected-data-wrapper">
-                    <div class="connected-disconnected-data-item">
-                      <div class="connected-disconnected-data">
-                        {{statisticObj.totalUnderMaintenanceCount}}
+                  <div class="connected-disconnected-item connected">
+                    <div class="connected-disconnected-data-wrapper">
+                      <div class="connected-disconnected-data-item">
+                        <div class="connected-disconnected-data">
+                          {{statisticObj.totalUnderMaintenanceCount}}
+                        </div>
                       </div>
                     </div>
+                    <div class="connected-disconnected-tile">Under <br />Maintenance</div>
                   </div>
-                  <div class="connected-disconnected-tile">Under <br />Maintenance</div>
-                </div>
                 </div>
                 <div class="col-lg-6">
                   <div class="connected-disconnected-item connected">
@@ -93,32 +93,20 @@
           </div>
           <mat-card class="dashboard-card mat-card">
             <div class="chart-data d-flex align-items-center justify-content-center h-100">
-              <div
-                *ngIf="assetUtilizationNoDataFound"
+              <div *ngIf="assetUtilizationNoDataFound"
                 class="text-center d-flex align-items-center justify-content-center" style="height: 300px;">
                 No data found
               </div>
-              <circle-progress
-                *ngIf="!assetUtilizationNoDataFound"
-                [percent]="assetUtilization"
-                [radius]="100"
-                [outerStrokeWidth]="10"
-                [innerStrokeWidth]="0"
-                [outerStrokeColor]="'#40c263'"
-                [innerStrokeColor]="'#C7E596'"
-                [animation]="true"
-                [animationDuration]="300"
-                [showTitle]="true"
-                [showSubtitle]="false"
-                [titleFontSize]="30"
-                [unitsFontSize]="30"
-              ></circle-progress>
+              <circle-progress *ngIf="!assetUtilizationNoDataFound" [percent]="assetUtilization" [radius]="100"
+                [outerStrokeWidth]="10" [innerStrokeWidth]="0" [outerStrokeColor]="'#40c263'"
+                [innerStrokeColor]="'#C7E596'" [animation]="true" [animationDuration]="300" [showTitle]="true"
+                [showSubtitle]="false" [titleFontSize]="30" [unitsFontSize]="30"></circle-progress>
 
             </div>
           </mat-card>
         </div>
-        
-        
+
+
       </div>
       <div class="row">
         <div class="drag-body dashboard-widget m-b-30 col-lg-12">
@@ -137,7 +125,7 @@
               </form>
             </div>
           </div>
-         
+
           <mat-card class="dashboard-card mat-card">
             <div class="chart-data d-flex align-items-center justify-content-center h-100">
               <div *ngIf="companyUsageChartData && companyUsageChartData.length" class="row w-100">
@@ -147,17 +135,17 @@
                   </div>
                   <div class="progress">
                     <div class="progress-bar " role="progressbar" aria-valuemin="0" aria-valuemax="100"
-                         [ngStyle]="{ 'width' : asset.utilizationPer + '%', 'background' : asset.color }">
+                      [ngStyle]="{ 'width' : asset.utilizationPer + '%', 'background' : asset.color }">
                       {{ asset.utilizationPer }}%
                     </div>
                   </div>
                 </div>
               </div>
 
-             
+
 
               <div *ngIf="!companyUsageChartData || !companyUsageChartData.length"
-                   class="text-center d-flex align-items-center justify-content-center" style="height: 350px;">
+                class="text-center d-flex align-items-center justify-content-center h-100" style="height: 350px;">
                 No data found
               </div>
             </div>
@@ -171,20 +159,20 @@
       <div class="map-list-wrapper">
         <section class="content-header p-t-10">
           <!-- <form> -->
-            <!-- <div class="instance-status-details m-r-20"> -->
-              <div class="d-flex flex-wrap align-items-center">
-                <div class="col">
-                  <div class="instance-status-info">
-                    <span class="user-status-type status-green">Active</span>
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="instance-status-info">
-                    <span class="user-status-type status-red">Inactive</span>
-                  </div>
-                </div>
+          <!-- <div class="instance-status-details m-r-20"> -->
+          <div class="d-flex flex-wrap align-items-center">
+            <div class="col">
+              <div class="instance-status-info">
+                <span class="user-status-type status-green">Active</span>
               </div>
-            <!-- </div> -->
+            </div>
+            <div class="col">
+              <div class="instance-status-info">
+                <span class="user-status-type status-red">Inactive</span>
+              </div>
+            </div>
+          </div>
+          <!-- </div> -->
           <!-- </form> -->
           <div class="ml-auto content-header-action">
             <ul class="legend-list mb-0 m-r-10">
@@ -196,12 +184,12 @@
         <div class="row">
           <div class="col-ld-3 col-lg-6 col-xl-4 m-b-30" *ngFor="let asset of assetList">
             <div class="user-grid-box" style="padding-top: 5px;">
-              
+
               <div class="instance-status-info" style="
                           margin-left: 99%;
                           padding-top: 0px; margin-top: 0px; padding-bottom: 20px;">
-                          <a href="javascript:void(0)" (click)="changeAssetStatusModel(asset)" ><span class="user-status-type"
-                          [ngClass]="(asset.isActive) ? 'status-green' : 'status-red' "></span></a>
+                <a href="javascript:void(0)" (click)="changeAssetStatusModel(asset)"><span class="user-status-type"
+                    [ngClass]="(asset.isActive) ? 'status-green' : 'status-red' "></span></a>
               </div>
               <div class="grid-inner-flex d-flex align-items-center">
                 <div class="user-image-box">
@@ -288,13 +276,7 @@
     <div class="drag-body dashboard-widget">
       <div class="panel-heading">
         <h5 class="panel-title"> Zones</h5>
-        <ul class="filter-for-chart">
-          <li>
-            <button [disableRipple]="true" mat-icon-button>
-              <mat-icon>more_horiz</mat-icon>
-            </button>
-          </li>
-        </ul>
+
       </div>
       <mat-card class="dashboard-card mat-card">
         <div class="cropscontainer facility-user-grid-box-container">
@@ -302,7 +284,7 @@
             <div class="text-center text-center m-r-20 m-l-20">
               <div class="crops-img-box">
                 <img alt="" class="img-fluid"
-                  src="{{zone.image == '00000000-0000-0000-0000-000000000000' || zone.image == null ||  zone.image == '' ? _appConstant.noImg: imgUrl + zone.image}}">
+                  src="{{zone.image == '00000000-0000-0000-0000-000000000000' || zone.image == null ||  zone.image == '' ? _appConstant.noImg:  zone.image}}">
               </div>
               <p class="user-grid-desc" title="{{zone.name}}">{{zone.name}}</p>
             </div>
@@ -344,20 +326,20 @@
         <div class="row">
           <div class="col-12">
             <fieldset class="form-group form-field">
-            <label class="form-label">Name<b>*</b></label>
-            <mat-form-field>
-              <input matInput name="name" formControlName="name" type="text" maxlength="50"
-                [(ngModel)]="zoneObj['name']" class="form-control" tabindex="1" placeholder="Name">
-              <div class="form-control-feedback" *ngIf="zoneForm.controls['name'].errors">
-                <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
-                  *ngIf="zoneForm.controls['name'].errors.required && checkSubmitStatus">
-                  Please enter Name
-                </p>
-              </div>
-            </mat-form-field>
-          </fieldset>
+              <label class="form-label">Name<b>*</b></label>
+              <mat-form-field>
+                <input matInput name="name" formControlName="name" type="text" maxlength="50"
+                  [(ngModel)]="zoneObj['name']" class="form-control" tabindex="1" placeholder="Name">
+                <div class="form-control-feedback" *ngIf="zoneForm.controls['name'].errors">
+                  <p class="form-tooltip-error sm " [ngClass]="{'error':true}"
+                    *ngIf="zoneForm.controls['name'].errors.required && checkSubmitStatus">
+                    Please enter Name
+                  </p>
+                </div>
+              </mat-form-field>
+            </fieldset>
           </div>
-          
+
           <div class="col-12">
             <label class="form-label">Description</label>
             <mat-form-field>
@@ -380,11 +362,13 @@
               <ul class="image-list ">
                 <li>
                   <div class="user-profle-image">
-                    <img *ngIf="zoneObj['image'] != '00000000-0000-0000-0000-000000000000' && zoneObj['image'] != null && zoneObj['image'] != ''" (click)="imageRemove()" class="close-icn"
-                      src="../../../../assets/images/cancel-dashboard.svg" alt="">
+                    <img
+                      *ngIf="zoneObj['image'] != '00000000-0000-0000-0000-000000000000' && zoneObj['image'] != null && zoneObj['image'] != ''"
+                      (click)="imageRemove()" class="close-icn" src="../../../../assets/images/cancel-dashboard.svg"
+                      alt="">
                     <img alt="" class="img-fluid"
                       src="{{zoneObj['image'] == '00000000-0000-0000-0000-000000000000' || zoneObj['image'] == null || zoneObj['image'] == '' ? _appConstant.noImg:  zoneObj['image']}}" />
-                    
+
 
                   </div>
                 </li>

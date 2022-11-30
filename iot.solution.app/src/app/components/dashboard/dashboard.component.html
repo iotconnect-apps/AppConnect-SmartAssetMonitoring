@@ -158,11 +158,11 @@
 								</div>
 							</div>
 							<mat-card class="dashboard-card mat-card p-0">
-								<div class="chart-data">
+								<div class="chart-data h-100">
 									<div *ngIf="!noRecordFoundInUsageByAssetType">
 										<google-chart [data]="pieChart"></google-chart>
 									</div>
-									<div *ngIf="noRecordFoundInUsageByAssetType" class="text-center d-flex align-items-center justify-content-center" style="height: 350px;">
+									<div *ngIf="noRecordFoundInUsageByAssetType" class="h-100 text-center d-flex align-items-center justify-content-center" style="height: 350px;">
 										No data found
 									</div>
 								</div>

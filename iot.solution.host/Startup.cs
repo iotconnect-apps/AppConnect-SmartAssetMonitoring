@@ -22,6 +22,29 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Mapper = iot.solution.service.Mapper;
+using System.Net;
+using System.Net.Mail;
+using component.helper;
+using component.helper.Interface;
+using Hangfire.Dashboard;
+
+using host.iot.solution.Hubs;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using IoT.Solution.SignalR.Manager;
+using component.messaging;
+using iot.solution.common;
+using iot.solution.service.AppSetting;
+using iot.solution.model;
+using iot.solution.model.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using ATune.Media.Nuget.Data;
+using ATune.Media.Nuget.Interface;
+using ATune.Media.Nuget;
+using ATune.Media.Nuget.Extension;
+using ATune.Document.Nuget.Common;
+using ATune.Document.Nuget;
+using ATune.Document.Nuget.Data;
 
 namespace host.iot.solution
 {
@@ -29,30 +52,103 @@ namespace host.iot.solution
     {
         public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
-            Configuration = configuration;
+            var core = new ConfigurationBuilder();
+            core
+                    .SetBasePath(environment.ContentRootPath)
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+
+            core.AddEnvironmentVariables();
+            Configuration = core.Build();
             HostEnvironment = environment;
+            AppConfig.Configuration = configuration;
         }
+
         public IConfiguration Configuration { get; }
         public IWebHostEnvironment HostEnvironment { get; }
         public void ConfigureServices(IServiceCollection services)
         {
             try
             {
+
                 component.helper.SolutionConfiguration.Init(HostEnvironment.WebRootPath);
+                component.helper.SolutionConfiguration.Configuration.ConnectionString = Configuration.GetConnectionString("AscaleAssetMonitoringDataConnection");
+                //services
+                //.AddEntityFrameworkSqlServer()
+                //  .AddDbContext<devassetmonitoringContext>(options =>
+                //   options.UseSqlServer(Configuration.GetConnectionString("AscaleAssetMonitoringDataConnection"), retryOption =>
+                //   {
+                //       retryOption.EnableRetryOnFailure(
+                //           maxRetryCount: 2,
+                //           maxRetryDelay: TimeSpan.FromSeconds(1),
+                //           errorNumbersToAdd: new List<int> { });
+                //   })
+                //   , ServiceLifetime.Transient);
+
+                services
+               .AddEntityFrameworkSqlServer()
+                 .AddDbContext<devassetmonitoringContext>(options =>
+                  options.UseSqlServer(Configuration.GetConnectionString("AscaleAssetMonitoringDataConnection"))
+                  , ServiceLifetime.Transient);
+
                 services.AddCorsMiddleware(Configuration);
                 services.AddMvcCore().AddNewtonsoftJson();
                 services.AddMvc(config => { config.Filters.Add(new ActionFilterAttribute()); });
-                services.Configure<ApiBehaviorOptions>(options => {
+                services.Configure<ApiBehaviorOptions>(options =>
+                {
                     options.SuppressModelStateInvalidFilter = true;
                 });
+
+                services.AddCors(options =>
+                {
+                    options.AddPolicy("ClientPermission", policy =>
+                    {
+                        policy.AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .WithOrigins(AppConfig.AllowedCorsOrigins)
+                            .AllowCredentials();
+                    });
+                });
+                services.AddSingleton<ICorsPolicyProvider, CorsPolicyProvider>();
+                services.AddSingleton<ISignalRGroupManager, SignalRGroupManager>();
+                services.AddSignalR();
+
+                ConfigureServicesCollection(services);
+
+                services.AddSingleton(typeof(ServiceAppSetting));
+                services.BuildServiceProvider().GetService<ServiceAppSetting>().GetDefaultServiceAppSettings();
+                services.AddTransient<IUnitOfWork, UnitOfWork>();
+                services.AddScoped<DbContext, devassetmonitoringContext>();
+
+                #region Solution Logger
+                ConcurrentDictionary<string, string> eventBusConfigurationList = new ConcurrentDictionary<string, string>();
+                eventBusConfigurationList.TryAdd("BrokerConnection", ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.LoggerBrokerConnection.ToString()));
+                services.AddSingleton(s => new EventBusConfiguration(eventBusConfigurationList));
+
+                services.Configure<DomainManager>(s =>
+                {
+                    //TODO: change serviceType accrodingly
+                    s.ApplicationType = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.LoggerSolutionName.ToString());
+                    s.ServiceType = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.LoggerSolutionName.ToString()) + "_LoggerService";
+
+                    s.DomainConfiguration = new List<Type>
+                        {
+                            typeof(DebugLoggerModel), typeof(ErrorLoggerModel), typeof(WarningLoggerModel), typeof(InfoLoggerModel), typeof(FatalLoggerModel)
+                        };
+                });
+                services.AddTransient<ILogger, Logger>();
+                services.AddTransient<IEventBus, AzureServiceBusManager>();
+                services.AddSingleton(typeof(component.services.loghandler.Logger));
+                #endregion
+
                 services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme).AddIdentityServerAuthentication("CompanyUser", o =>
                 {
-                    o.Authority = component.helper.SolutionConfiguration.Configuration.Token.Authority;
-                    o.ApiName = component.helper.SolutionConfiguration.Configuration.Token.ApiName;
-                    o.ApiSecret = component.helper.SolutionConfiguration.Configuration.Token.ApiSecret;
-                    o.EnableCaching = component.helper.SolutionConfiguration.Configuration.Token.EnableCaching;
-                    o.CacheDuration = TimeSpan.FromMinutes(component.helper.SolutionConfiguration.Configuration.Token.CacheDurationMinutes);
-                    o.RequireHttpsMetadata = component.helper.SolutionConfiguration.Configuration.Token.RequireHttpsMetadata;
+                    o.Authority = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenAuthority.ToString());
+                    o.ApiName = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenApiName.ToString());
+                    o.ApiSecret = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenApiSecret.ToString());
+                    o.EnableCaching = Convert.ToBoolean(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenEnableCaching.ToString()));
+                    o.CacheDuration = TimeSpan.FromMinutes(Convert.ToInt32(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenCacheDurationMinutes.ToString())));
+                    o.RequireHttpsMetadata = Convert.ToBoolean(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenRequireHttpsMetadata.ToString()));
                 });
                 services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme).AddJwtBearer("Mobile", options =>
                 {
@@ -62,9 +158,9 @@ namespace host.iot.solution
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
-                        ValidIssuer = component.helper.SolutionConfiguration.Configuration.Token.Issuer.ToLower(),
-                        ValidAudience = component.helper.SolutionConfiguration.Configuration.Token.Audience.ToLower(),
-                        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(component.helper.SolutionConfiguration.Configuration.Token.SecurityKey))
+                        ValidIssuer = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenIssuer.ToString()).ToLower(),
+                        ValidAudience = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenAudience.ToString()).ToLower(),
+                        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenSecurityKey.ToString())))
                     };
                 });
                 services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme).AddJwtBearer("Admin", options =>
@@ -75,19 +171,58 @@ namespace host.iot.solution
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
-                        ValidIssuer = component.helper.SolutionConfiguration.Configuration.Token.Issuer.ToLower(),
-                        ValidAudience = component.helper.SolutionConfiguration.Configuration.Token.Audience.ToLower(),
-                        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(component.helper.SolutionConfiguration.Configuration.Token.SecurityKey))
+                        ValidIssuer = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenIssuer.ToString()).ToLower(),
+                        ValidAudience = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenAudience.ToString()).ToLower(),
+                        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.TokenSecurityKey.ToString()))),
+                        ClockSkew = TimeSpan.Zero
                     };
                 });
 
+
+                services.AddScoped<IMediaDbContext, ATune.Media.Nuget.Data.MediaContext>();
+                services.AddScoped<IImageOperation, ImageOperation>();
+
+                services.Configure<AzureConfigurationManager>(s =>
+                {
+                    s.DBConnectionString = Configuration.GetConnectionString("AscaleAssetMonitoringDataConnection");
+                    s.AzureConnectionString = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.MediaAzureConnectionString.ToString());
+                    s.MediaTimeoutMinutes = Convert.ToInt32(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.MediaTimeoutMinutes.ToString()));
+                    s.BlobContainerName = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.MediaBlobContainerName.ToString());
+                    s.AzureFun_GenerateImageURL = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.AzureFun_GenerateImageURL.ToString());
+                    s.AzureFun_DeleteImageURL = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.AzureFun_DeleteImageURL.ToString());
+                });
+
+                services.AddSingleton<IDocumentContext, DocumentContext>();
+                services.AddSingleton<IDocumentOprerations, DocumentOprerations>();
+                services.Configure<DocumentAzureConfigurationManager>(s =>
+                {
+                    s.DBConnectionString = Configuration.GetConnectionString("AscaleAssetMonitoringDataConnection");
+                    s.AzureConnectionString = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.MediaAzureConnectionString.ToString());
+                    s.DocumentTimeoutMinutes = Convert.ToInt32(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.MediaTimeoutMinutes.ToString()));
+                    s.BlobContainerName = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.MediaBlobContainerName.ToString());
+                });
+
+
+
                 Mapper.Configuration.Initialize();
                 SwaggerExtension.ConfigureService(services, Configuration);
-                ConfigureServicesCollection(services);
                 ConfigureMessaging(services);
                 services.AddControllers();
                 ConfigureHangfireSettings(services);
                 component.helper.DependencyResolver.Init(services);
+                services.AddScoped<SmtpClient>((serviceProvider) =>
+                {
+                    var config = serviceProvider.GetRequiredService<IConfiguration>();
+                    return new SmtpClient()
+                    {
+                        Host = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpHost.ToString()),
+                        Port = Convert.ToInt32(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpPort.ToString())),
+                        Credentials = new NetworkCredential(
+                                ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpUserName.ToString()),
+                                ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SmtpPassword.ToString())
+                            )
+                    };
+                });
             }
             catch (Exception ex)
             {
@@ -102,11 +237,18 @@ namespace host.iot.solution
                 GlobalConfiguration.Configuration
             .UseActivator(new HangfireActivator(serviceProvider));
 
+                app.UseHangfireDashboard("/hangfire", new DashboardOptions
+                {
+                    Authorization = new[] { new MyAuthorizationFilter() },
+                    IgnoreAntiforgeryToken = true
+                });
                 app.UseHangfireServer(new BackgroundJobServerOptions { WorkerCount = Environment.ProcessorCount });
+
                 if (env.IsDevelopment())
                 {
                     app.UseDeveloperExceptionPage();
                 }
+
                 app.UseCorsMiddleware();
                 SwaggerExtension.Configure(app);
                 app.UseStaticFiles();
@@ -114,11 +256,18 @@ namespace host.iot.solution
                 app.UseAuthentication();
                 app.UseAuthorization();
                 app.UseHeaderkeyAuthorization();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                    endpoints.MapHub<NotificationHub>("/notificationhub");
+                });
+
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
                 });
-                if (Convert.ToBoolean(component.helper.SolutionConfiguration.Configuration.HangFire.Enabled.ToString()))
+                if (Convert.ToBoolean(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.HangFireEnabled.ToString())))
                 {
                     StartHangFireBackgroundJobs();
                 }
@@ -136,7 +285,7 @@ namespace host.iot.solution
         {
             services.AddHangfire(x => x.UseSqlServerStorage(component.helper.SolutionConfiguration.Configuration.ConnectionString));
         }
-     
+
         private static void StartHangFireBackgroundJobs()
         {
             // Note: if you ever remove one of these, either delete it via HangFire UI
@@ -146,46 +295,33 @@ namespace host.iot.solution
                 job => job.DailyProcess(),
                 Cron.Daily);
             RecurringJob.AddOrUpdate<ITelemetryDataJob>(
-               job => job.HourlyProcess(),  string.Format("0 */{0} * * *", component.helper.SolutionConfiguration.Configuration.HangFire.TelemetryHours));
+               job => job.HourlyProcess(), string.Format("0 */{0} * * *", ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.HangFireTelemetryHours.ToString())));
+            RecurringJob.AddOrUpdate<ITelemetryDataJob>(
+             job => job.SubscriptionMailProcess(),
+             Cron.Daily);
         }
         private void ConfigureServicesCollection(IServiceCollection services)
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
-            #region Solution Logger
-            ConcurrentDictionary<string, string> eventBusConfigurationList = new ConcurrentDictionary<string, string>();
-            eventBusConfigurationList.TryAdd("BrokerConnection", component.helper.SolutionConfiguration.Configuration.Logger.BrokerConnection);
-            services.AddSingleton(s => new EventBusConfiguration(eventBusConfigurationList));
 
-            services.Configure<DomainManager>(s =>
-            {
-                //TODO: change serviceType accrodingly
-                s.ApplicationType = component.helper.SolutionConfiguration.Configuration.Logger.SolutionName;
-                s.ServiceType = component.helper.SolutionConfiguration.Configuration.Logger.SolutionName + "_LoggerService";
-
-                s.DomainConfiguration = new List<Type>
-                    {
-                        typeof(DebugLoggerModel), typeof(ErrorLoggerModel), typeof(WarningLoggerModel), typeof(InfoLoggerModel), typeof(FatalLoggerModel)
-                    };
-            });
-            services.AddTransient<ILogger, Logger>();
-            services.AddTransient<IEventBus, AzureServiceBusManager>();
-            services.AddSingleton(typeof(component.services.loghandler.Logger));
-            #endregion
 
             IocConfigurations.Initialize(services);
             services.AddScoped<ITelemetryDataJob, TelemetryDataJob>();
+            services.AddScoped<IEmailHelper, EmailHelper>();
         }
         private void ConfigureMessaging(IServiceCollection services)
         {
-            if (component.helper.SolutionConfiguration.Configuration.Messaging != null
-            && !string.IsNullOrWhiteSpace(component.helper.SolutionConfiguration.Configuration.Messaging.ServicebusEndPoint))
+            if (!string.IsNullOrWhiteSpace(ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.MessagingServicebusEndPoint.ToString())))
             {
                 component.messaging.CustomStartup.AddIOTConnectSyncManager(services, component.helper.SolutionConfiguration.Configuration.ConnectionString,
-                component.helper.SolutionConfiguration.Configuration.Messaging.ServicebusEndPoint,
-                component.helper.SolutionConfiguration.Configuration.Messaging.TopicName,
-                component.helper.SolutionConfiguration.Configuration.Messaging.SubscriptionName);
+                ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.MessagingServicebusEndPoint.ToString()),
+                ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.MessagingTopicName.ToString()),
+                ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.MessagingSubscriptionName.ToString()), ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionBaseUrl.ToString()),
+                ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionClientID.ToString()),
+                ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionClientSecret.ToString()),
+                ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SubscriptionUserName.ToString()));
             }
         }
         public void LogStartupError(IServiceCollection services, Exception ex)
@@ -193,13 +329,13 @@ namespace host.iot.solution
             services.AddScoped(typeof(component.services.loghandler.Logger));
 
             ConcurrentDictionary<string, string> eventBusConfigurationList = new ConcurrentDictionary<string, string>();
-            eventBusConfigurationList.TryAdd("BrokerConnection", component.helper.SolutionConfiguration.Configuration.Logger.BrokerConnection);
+            eventBusConfigurationList.TryAdd("BrokerConnection", ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.LoggerBrokerConnection.ToString()));
             services.AddSingleton(s => new EventBusConfiguration(eventBusConfigurationList));
 
             services.Configure<DomainManager>(s =>
             {
-                s.ApplicationType = component.helper.SolutionConfiguration.Configuration.Logger.SolutionName;
-                s.ServiceType = component.helper.SolutionConfiguration.Configuration.Logger.SolutionName + "_LoggerService";
+                s.ApplicationType = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.LoggerSolutionName.ToString());
+                s.ServiceType = ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.LoggerSolutionName.ToString()) + "_LoggerService";
 
                 s.DomainConfiguration = new List<Type>
                     {
@@ -208,6 +344,24 @@ namespace host.iot.solution
             });
             var buildService = services.BuildServiceProvider();
             var logger = buildService.GetService<component.services.loghandler.Logger>().FatalLog(ex.ToString(), ex);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <seealso cref="Hangfire.Dashboard.IDashboardAuthorizationFilter" />
+        public class MyAuthorizationFilter : IDashboardAuthorizationFilter
+        {
+            /// <summary>
+            /// Authorizes the specified context.
+            /// </summary>
+            /// <param name="context">The context.</param>
+            /// <returns></returns>
+            public bool Authorize(DashboardContext context)
+            {
+                // Allow all authenticated users to see the Dashboard (potentially dangerous).
+                return true;
+            }
         }
     }
 }

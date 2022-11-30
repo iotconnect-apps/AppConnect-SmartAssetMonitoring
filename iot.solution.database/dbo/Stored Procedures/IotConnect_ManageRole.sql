@@ -100,10 +100,11 @@ BEGIN
 			USING #tempRole AS source ON (target.[name] = source.[name] OR target.[guid] = source.[guid]) and target.companyGuid=@companyGuid 
 			WHEN MATCHED THEN
 				UPDATE SET [name] = source.[name],[IsDeleted]=0,target.[guid] = source.[guid],
-						[description] = source.[description]
+						[description] = source.[description],
+						[isAdminRole] = CASE WHEN source.[name] = 'Owner' THEN 1 ELSE 0 END
 			WHEN NOT MATCHED THEN  
-				INSERT ([guid], [companyGuid], [name], [description], [isActive], [isDeleted],[createdDate])  
-				VALUES (source.[guid], @companyGuid, source.[name], source.[description], source.[isActive], source.[isDeleted], GETUTCDATE())  ;
+				INSERT ([guid], [companyGuid], [name], [description], [isActive], [isDeleted],[createdDate],[isAdminRole])  
+				VALUES (source.[guid], @companyGuid, source.[name], source.[description], source.[isActive], source.[isDeleted], GETUTCDATE(),CASE WHEN source.[name] = 'Owner' THEN 1 ELSE 0 END)  ;
 						
 			END
 			

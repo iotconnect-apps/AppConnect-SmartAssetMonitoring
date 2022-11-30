@@ -2,7 +2,9 @@
 using component.logger;
 using iot.solution.common;
 using iot.solution.model.Repository.Interface;
+using iot.solution.service.AppSetting;
 using iot.solution.service.Interface;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,13 +21,15 @@ namespace iot.solution.service.Implementation
 
         private readonly IotConnectClient _iotConnectClient;
         private readonly ILogger _logger;
+        public  IConfiguration _configuration { get; set; }
 
-        public DeviceMaintenanceService(IDeviceMaintenanceRepository entityMaintenanceRepository, IEntityRepository entityRepository,ILogger logger)
+        public DeviceMaintenanceService(IDeviceMaintenanceRepository entityMaintenanceRepository, IEntityRepository entityRepository,ILogger logger, IConfiguration configuration)
         {
+            _configuration = configuration;
             _logger = logger;
             _deviceMaintenanceRepository = entityMaintenanceRepository;
             _entityRepository = entityRepository;
-            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, SolutionConfiguration.Configuration.EnvironmentCode, SolutionConfiguration.Configuration.SolutionKey);
+            _iotConnectClient = new IotConnectClient(SolutionConfiguration.BearerToken, ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.EnvironmentCode.ToString()), ServiceAppSetting.Instance.GetRequiredAppSettingByKey(AppSettingKey.SolutionKey.ToString()));
         }
       
         public List<Entity.DeviceMaintenance> Get()

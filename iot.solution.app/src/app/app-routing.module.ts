@@ -32,7 +32,7 @@ const appRoutes: Routes = [
         canActivate: [AuthService]
       },
       {
-        path: 'subscribers/:email/:productCode/:companyId',
+        path: 'subscribers/:consumerId/:productCode/:companyId',
         component: SubscriberDetailComponent,
         canActivate: [AuthService]
       },
@@ -157,7 +157,7 @@ const appRoutes: Routes = [
     canActivate: [AdminAuthGuard]
   },
   {
-    path: 'assetss',
+    path: 'assets',
     component: AssetsListComponent,
     canActivate: [AdminAuthGuard]
   },

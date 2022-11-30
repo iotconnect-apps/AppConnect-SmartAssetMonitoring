@@ -61,7 +61,9 @@ namespace IoTConnect.Common.Repository
         public async Task<string> GetPortalUrl(string environmentCode, string solutionKey, IoTConnectBaseURLType baseUrlType)
         {
             var url = await GetIoTConnectBaseURL(Constants.discoveryUrl, environmentCode, solutionKey, baseUrlType);
-            return url?.Replace("api/v1.1", "");
+            Uri uri = new Uri(url);
+            string requested = uri.Scheme + Uri.SchemeDelimiter + uri.Host + ":" + uri.Port + "/";
+            return requested;
         }
 
         /// <summary>
@@ -149,10 +151,10 @@ namespace IoTConnect.Common.Repository
         /// <param name="solutionKey">IotConnect Solution Unique Key</param>
         /// <param name="baseUrlType">IotConnect Base URL Types (Auth, User, Device, Telemetry)</param>
         /// <returns></returns>
-        public async Task LoggedException(string environmentCode,Exception ex,string rdkFileName,string MethodName)
+        public async Task LoggedException(string environmentCode, Exception ex, string rdkFileName, string MethodName)
         {
             var url = string.Empty;
-            if(environmentCode == EnviormentCode.qa.ToString())
+            if (environmentCode == EnviormentCode.qa.ToString())
             {
                 url = Constants.qaLoggerUrl;
             }
@@ -160,11 +162,11 @@ namespace IoTConnect.Common.Repository
             {
                 url = Constants.devLoggerUrl;
             }
-            else if(environmentCode == EnviormentCode.poc.ToString())
+            else if (environmentCode == EnviormentCode.poc.ToString())
             {
                 url = Constants.uatLoggerUrl;
             }
-            else if(environmentCode == EnviormentCode.avnet.ToString())
+            else if (environmentCode == EnviormentCode.avnet.ToString())
             {
                 url = Constants.prodLoggerUrl;
             }
@@ -173,7 +175,8 @@ namespace IoTConnect.Common.Repository
                 url = Constants.prodLoggerUrl;
             }
 
-            ErrorHandlerModel errorHandlerModel = new ErrorHandlerModel() {
+            ErrorHandlerModel errorHandlerModel = new ErrorHandlerModel()
+            {
                 applicationCode = "Media",
                 date = DateTime.UtcNow,
                 errorCode = Convert.ToString(ex.HResult),
@@ -192,7 +195,7 @@ namespace IoTConnect.Common.Repository
             try
             {
                 client.DefaultRequestHeaders.Clear();
-                client.DefaultRequestHeaders.Accept.Clear();                
+                client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("General_MediaServiceKey");
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, new Uri(url));
                 var contentString = JsonConvert.SerializeObject(errorHandlerModel);
@@ -200,9 +203,9 @@ namespace IoTConnect.Common.Repository
                                     Encoding.UTF8,
                                     "application/json-patch+json");//CONTENT-TYPE header
 
-               var da = await client.SendAsync(request);
-                
-            }                       
+                var da = await client.SendAsync(request);
+
+            }
             catch (Exception ex2)
             {
                 throw ex2;
